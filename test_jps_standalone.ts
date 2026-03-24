@@ -1,36 +1,18 @@
-import type { Step } from './index';
+// Standalone JPS script
+const rows = 10;
+const cols = 10;
 
-export const jpsMetadata = {
-  id: 'jps',
-  name: 'Jump Point Search (JPS)',
-  description: 'Jump Point Search (Búsqueda por Puntos de Salto) es una apoteósica obra maestra de la optimización asimétrica para el algoritmo A*. Su modus operandi consiste en "teletransportarse" a largas distancias y en línea recta a través de enormes áreas abiertas saltándose e ignorando por completo la tediosa lectura iterativa de las celdas irrelevantes.\n\nEn lugar de revisar paso por paso las baldosas contiguas de su alrededor (como hace servicialmente el A* clásico), JPS escanea líneas rectas y diagonales disparando una suerte de rayo direccional buscando únicamente de forma exclusiva "Puntos de Salto" (esquinas de muros, recovecos u obstáculos estratégicos forzados ineludibles). Tan solo registra dichos nodos clave, y desecha mentalmente absolutamente todo el pasillo intermedio transitable llano que ya dio por conquistado de antemano. Soporta de forma magistral movimiento diagonal completo.',
-  characteristics: [
-    'Garantiza descifrar el camino unívoco de magnitud más corto al igual que A*.',
-    'Súper eficiente, drámatico y ultra veloz en espacios y páramos extremadamente abiertos al saltar enormes distancias del plano de golpe.',
-    'Permite de forma natural e implementada el libre movimiento en las 8 direcciones cardinales.'
-  ],
-  applications: [
-    'Videojuegos multimasivos (MMO o tácticos RPGs) que requieren simular miles de agentes moviéndose a la vez en tiempo real de forma masiva.',
-    'Robótica automatizada portuaria de estibación y navegación rápida autónoma con drones en inmensas explanadas y pabellones de almacenes.'
-  ],
-  pseudocode: `Abiertos = [Inicio]
-Mientras Abiertos no esté vacío:
-  Actual = Sacar de Abiertos
-  Si Actual == Fin: Retornar Camino
-  Para cada Vecino de Actual:
-    PuntoDeSalto = Saltar(Actual, Dirección)
-    Si PuntoDeSalto existe:
-      Añadir PuntoDeSalto a Abiertos`,
-  pseudocodeLegend: {
-    'Abiertos': 'Cola de prioridad idéntica punto a punto a la usada en su predecesor A*, pero que tan solo alberga en su celoso interior los limitados y exclusivos recovecos calificados como dignos Puntos de Salto de todo el largo plano.',
-    'PuntoDeSalto': 'Una coordenada, rincón o esquina obligatoria (normalmente rodeando muros caprichosos) el cual sí es digno y vale la estricta pena recelar estructuralmente de él y registrar y retener en la limitada memoria ram del cliente para luego calcular giros matemáticos precisos sobre su contorno y lomo.',
-    'Saltar': 'La ágil agresiva técnica de otear o sondear disparando un láser matemático recto que filtra o salta el vacio omitiendo rápidamente iteraciones de sucias celdillas libres de escombros de la inmensidad topográfica, ahorrando miles de preciosos ociosos ciclos de cómputo inyectados a la CPU durante el simulacro.',
-    'Camino': 'Línea de ruta que une finalmente con escuadra y cartabón la pequeña ristra ínfima de vértices escuetos recopilados, obteniendo de chiripa implícita los pasos lineales exactos por descarte geográfico del medio recorrido sin tener que calcular todos los baldosines a lo loco y bestia uno a uno como sus rústicos y arcaicos ancestros desfasados computacionales obligan.'
-  },
-  isImplemented: true
-};
+const grid = Array.from({ length: rows }, () => new Array(cols).fill(false));
+grid[2][1] = true; grid[2][2] = true;
+grid[3][1] = true; grid[3][2] = true;
+grid[4][1] = true; grid[4][2] = true;
 
-export function* jps(
+const start = { x: 0, y: 0 };
+const end = { x: 1, y: 6 };
+
+interface Step { x: number; y: number; type?: string; }
+
+function* jps(
   grid: boolean[][],
   start: { x: number; y: number },
   end: { x: number; y: number },
@@ -58,8 +40,6 @@ export function* jps(
   openSet.push({ x: start.x, y: start.y, f: h(start.x, start.y), g: 0 });
   yield { ...start, type: 'visited' };
 
-  // Diagonal move from (cx,cy) to (cx+dx,cy+dy) is legal only if
-  // both cardinal intermediaries are free (strict no-corner-cutting).
   const canMoveDiag = (cx: number, cy: number, dx: number, dy: number) =>
     isWalkable(cx + dx, cy) && isWalkable(cx, cy + dy);
 
@@ -68,26 +48,18 @@ export function* jps(
     const ny = cy + dy;
 
     if (!isWalkable(nx, ny)) return null;
-
-    // No-corner-cutting: block diagonal moves through walls
     if (dx !== 0 && dy !== 0 && !canMoveDiag(cx, cy, dx, dy)) return null;
-
     if (nx === end.x && ny === end.y) return { x: nx, y: ny };
 
     if (dx !== 0 && dy !== 0) {
-      // Diagonal: jump point if a cardinal sub-jump identifies one
       if (jump(nx, ny, dx, 0) !== null || jump(nx, ny, 0, dy) !== null) return { x: nx, y: ny };
     } else if (dx !== 0) {
-      // Horizontal: forced neighbor if wall just behind in perp direction, now open
-      // (wall at cx in perp direction, clear at nx in perp direction)
       if ((!isWalkable(cx, ny + 1) && isWalkable(nx, ny + 1)) ||
           (!isWalkable(cx, ny - 1) && isWalkable(nx, ny - 1))) return { x: nx, y: ny };
     } else {
-      // Vertical: forced neighbor if wall just behind in perp direction, now open
       if ((!isWalkable(nx + 1, cy) && isWalkable(nx + 1, ny)) ||
           (!isWalkable(nx - 1, cy) && isWalkable(nx - 1, ny))) return { x: nx, y: ny };
     }
-
     return jump(nx, ny, dx, dy);
   }
 
@@ -97,7 +69,6 @@ export function* jps(
     const x = node.x, y = node.y;
 
     if (!par) {
-      // Start node: all 8 directions (respecting no-corner-cutting)
       for (let ddx = -1; ddx <= 1; ddx++) {
         for (let ddy = -1; ddy <= 1; ddy++) {
           if (ddx === 0 && ddy === 0) continue;
@@ -113,32 +84,23 @@ export function* jps(
     const dy = Math.sign(y - par.y);
 
     if (dx !== 0 && dy !== 0) {
-      // Arrived diagonally: natural neighbors
       const canH = isWalkable(x + dx, y);
       const canV = isWalkable(x, y + dy);
       if (canH) dirs.push({ dx, dy: 0 });
       if (canV) dirs.push({ dx: 0, dy });
       if (canH && canV && isWalkable(x + dx, y + dy)) dirs.push({ dx, dy });
-
     } else if (dx !== 0) {
-      // Arrived horizontally
       if (isWalkable(x + dx, y)) dirs.push({ dx, dy: 0 });
-
-      // Forced neighbor: wall was behind in perpendicular direction, now open
       if (!isWalkable(x - dx, y + 1) && isWalkable(x, y + 1)) {
-        dirs.push({ dx: 0, dy: 1 }); // cardinal turn
-        // Also add diagonal if the path is legal (no corner cut)
+        dirs.push({ dx: 0, dy: 1 });
         if (isWalkable(x + dx, y)) dirs.push({ dx, dy: 1 });
       }
       if (!isWalkable(x - dx, y - 1) && isWalkable(x, y - 1)) {
         dirs.push({ dx: 0, dy: -1 });
         if (isWalkable(x + dx, y)) dirs.push({ dx, dy: -1 });
       }
-
     } else {
-      // Arrived vertically
       if (isWalkable(x, y + dy)) dirs.push({ dx: 0, dy });
-
       if (!isWalkable(x + 1, y - dy) && isWalkable(x + 1, y)) {
         dirs.push({ dx: 1, dy: 0 });
         if (isWalkable(x, y + dy)) dirs.push({ dx: 1, dy });
@@ -148,7 +110,6 @@ export function* jps(
         if (isWalkable(x, y + dy)) dirs.push({ dx: -1, dy });
       }
     }
-
     return dirs;
   }
 
@@ -199,3 +160,24 @@ export function* jps(
     }
   }
 }
+
+const gen = jps(grid, start, end, rows, cols);
+let step;
+const path = [];
+const visited = [];
+
+while (true) {
+  const result = gen.next();
+  if (result.done) break;
+  if (result.value.type === 'path') {
+    path.push(result.value);
+  } else {
+    visited.push(result.value);
+  }
+}
+
+console.log("JPS Visited Nodes (Jump Points Evaluated):");
+visited.forEach(v => console.log(`(${v.x}, ${v.y})`));
+
+console.log("\nJPS Path:");
+path.forEach(p => console.log(`(${p.x}, ${p.y})`));

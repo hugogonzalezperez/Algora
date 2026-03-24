@@ -3,7 +3,27 @@ import type { MazeStep } from './index';
 export const primMetadata = {
   id: 'prim',
   name: "Prim's Algorithm",
-  description: 'Crece orgánicamente como un cristal de hielo desde un punto inicial. Forma un laberinto estilo "telaraña" con muchísimos caminos cortos o callejones sin salida rápidos, muy fácil de resolver a simple vista.',
+  description: 'El Algoritmo de Prim modificado para tallar laberintos ortogonales es una soberbia adaptación estocástica del clásico algoritmo matemático de grafos. A diferencia de las laberínticas formas serpenteantes del DFS, Prim genera laberintos frondosos, profusamente ramificados y orgánicamente texturizados, tal como si fuera un cristal de hielo creciendo o un micelio celular.\n\nComienza en una posición aleatoria y va agregando irremisiblemente los gruesos muros linderos inexplorados a una "Frontera" activa expansiva. En cada iteración, selecciona completamente al azar un muro perimetral de esa gran bolsa de contención y lo rompe, uniendo la celda diáfana con la inexplorada al otro lado del muro, dando lugar a una vasta red de pasillos capilarizados y abundantes callejones sin salida rápidos.',
+  characteristics: [
+    'Produce laberintos con una gran cantidad de pequeños recovecos y túneles (branching factor alto).',
+    'Las opciones aleatorias en la inmensa lista de muros le dan una textura visual uniforme, cristalizada y muy orgánica.',
+    'Es un laberinto "Perfecto" (sin isletas aisladas ni bucles), pero requiere mantener un gigantesco set en memoria.'
+  ],
+  applications: [
+    'Estética intrincada de cuevas ramificadas o túneles de hormigas.',
+    'Generación de mapas tácticos densos donde el jugador deba explorar habitación a habitación sin perderse demasiado en pasillos.'
+  ],
+  pseudocode: `Marcar Inicio y añadir vecinos a la "Frontera"
+Mientras Frontera no esté vacía:
+  C = Elegir celda de Frontera aleatoriamente
+  Conectar C con un vecino ya Visitado (aleatorio si hay varios)
+  Marcar C como Visitada
+  Añadir nuevos vecinos de C a la Frontera`,
+  pseudocodeLegend: {
+    'Frontera': 'El perímetro externo inestable o la coraza amurallada expansiva que rodea al conjunto aglutinado de celdas "Visitadas" e integradas a la sala base.',
+    'Aleatoriamente': 'La fortuita selección caótica que dictamina sin ningún sesgo qué muro de la inmensa frontera debe caer. Esto origina la naturaleza expansiva radial del laberinto.',
+    'Conectar': 'El sublime acto de derribar el obstáculo interpuesto entre la celda virgen y el laberinto funcional transitable, sumándola a la retícula caminable.'
+  },
   isImplemented: true
 };
 

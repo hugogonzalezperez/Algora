@@ -16,6 +16,7 @@ export const PathfindingPage = () => {
   const [speed, setSpeed] = useState(5); // Delay en ms
   const stopRequested = useRef(false);
   const [draggingNode, setDraggingNode] = useState<'start' | 'end' | null>(null);
+  const initialDragPosition = useRef<{ x: number, y: number } | null>(null);
   const prevDraggingNode = useRef<'start' | 'end' | null>(null);
 
   useEffect(() => {
@@ -71,6 +72,7 @@ export const PathfindingPage = () => {
         const node = document.getElementById(`node-${x}-${y}`);
         if (node) {
           const fill = node.getAttribute('fill');
+          // Solo limpiar si no es un muro
           if (fill !== '#1a1a1a' && fill !== 'rgb(26, 26, 26)') {
             node.setAttribute('fill', 'transparent');
             node.style.transitionDelay = '0ms';
@@ -86,12 +88,16 @@ export const PathfindingPage = () => {
     if (isRunning) return;
 
     if (draggingNode === 'start') {
+      // Prevenir que el nodo de inicio se superponga con el nodo final
+      if (x === endNode.x && y === endNode.y) return;
       setStartNode({ x, y });
       clearPath();
       return;
     }
 
     if (draggingNode === 'end') {
+      // Prevenir que el nodo final se superponga con el nodo de inicio
+      if (x === startNode.x && y === startNode.y) return;
       setEndNode({ x, y });
       clearPath();
       return;
@@ -113,6 +119,28 @@ export const PathfindingPage = () => {
     }
   }, [isRunning, startNode, endNode, draggingNode, clearPath]);
 
+  const handleNodeDragStart = useCallback((nodeType: 'start' | 'end' | null) => {
+    if (isRunning) return;
+
+    if (nodeType !== null) {
+      // Guardar posición inicial al empezar el arrastre
+      initialDragPosition.current = nodeType === 'start' ? { ...startNode } : { ...endNode };
+    } else {
+      // Al soltar el nodo, comprobar si hay colisión
+      if (draggingNode === 'start') {
+        if (startNode.x === endNode.x && startNode.y === endNode.y) {
+          if (initialDragPosition.current) setStartNode(initialDragPosition.current);
+        }
+      } else if (draggingNode === 'end') {
+        if (endNode.x === startNode.x && endNode.y === startNode.y) {
+          if (initialDragPosition.current) setEndNode(initialDragPosition.current);
+        }
+      }
+      initialDragPosition.current = null;
+    }
+    setDraggingNode(nodeType);
+  }, [isRunning, draggingNode, startNode, endNode]);
+
   const runAlgorithm = async () => {
     if (isRunning || !gridSize.rows || !gridSize.cols) return;
 
@@ -128,19 +156,23 @@ export const PathfindingPage = () => {
     stopRequested.current = false;
     clearPath();
 
-    const grid: boolean[][] = [];
-    for (let y = 0; y < gridSize.rows; y++) {
-      const row: boolean[] = [];
-      for (let x = 0; x < gridSize.cols; x++) {
+    const currentGrid: boolean[][] = Array.from({ length: gridSize.rows }, (_, y) =>
+      Array.from({ length: gridSize.cols }, (_, x) => {
         const node = document.getElementById(`node-${x}-${y}`);
-        const fill = node?.getAttribute('fill');
-        const isWall = fill === '#1a1a1a' || fill === 'rgb(26, 26, 26)';
-        row.push(isWall);
-      }
-      grid.push(row);
-    }
+        if (!node) return false;
+        const fill = node.getAttribute('fill');
+        // Un muro es cualquier cosa que no sea transparente o vacío
+        return fill !== 'transparent' && fill !== 'none' && fill !== '';
+      })
+    );
 
-    const generator = algo.execute(grid, startNode, endNode, gridSize.rows, gridSize.cols);
+    const generator = algo.execute(
+      currentGrid,
+      startNode,
+      endNode,
+      gridSize.rows,
+      gridSize.cols
+    );
 
     for (const step of generator) {
       if (stopRequested.current) break;
@@ -304,7 +336,7 @@ export const PathfindingPage = () => {
               startNode={startNode}
               endNode={endNode}
               onInteraction={handleInteraction}
-              onNodeDragStart={setDraggingNode}
+              onNodeDragStart={handleNodeDragStart}
             />
           )}
 
@@ -315,12 +347,35 @@ export const PathfindingPage = () => {
       </div>
 
       {/* Info Section */}
-      <AlgorithmInfo
-        title={PATHFINDING_ALGORITHMS[selectedPathAlgo]?.name || ''}
-        description={PATHFINDING_ALGORITHMS[selectedPathAlgo]?.description || ''}
-        characteristics={PATHFINDING_ALGORITHMS[selectedPathAlgo]?.characteristics || []}
-        applications={PATHFINDING_ALGORITHMS[selectedPathAlgo]?.applications || []}
-      />
+      <section className="info-section">
+        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-16 items-stretch">
+          {/* Generation Algorithm Column */}
+          <div className="flex-1">
+            <AlgorithmInfo
+              title={MAZE_ALGORITHMS[selectedMazeAlgo]?.name || 'Algoritmo de Generación'}
+              description={MAZE_ALGORITHMS[selectedMazeAlgo]?.description || 'Selecciona un algoritmo de generación de laberintos en la barra de herramientas.'}
+              characteristics={MAZE_ALGORITHMS[selectedMazeAlgo]?.characteristics || []}
+              applications={MAZE_ALGORITHMS[selectedMazeAlgo]?.applications || []}
+              pseudocode={MAZE_ALGORITHMS[selectedMazeAlgo]?.pseudocode || ''}
+              pseudocodeLegend={MAZE_ALGORITHMS[selectedMazeAlgo]?.pseudocodeLegend || {}}
+            />
+          </div>
+
+          <div className="hidden lg:block w-[1px] bg-carbon/20 my-16"></div>
+
+          {/* Resolution Algorithm Column */}
+          <div className="flex-1">
+            <AlgorithmInfo
+              title={PATHFINDING_ALGORITHMS[selectedPathAlgo]?.name || 'Algoritmo de Resolución'}
+              description={PATHFINDING_ALGORITHMS[selectedPathAlgo]?.description || 'Selecciona un algoritmo de resolución de caminos en la barra de herramientas.'}
+              characteristics={PATHFINDING_ALGORITHMS[selectedPathAlgo]?.characteristics || []}
+              applications={PATHFINDING_ALGORITHMS[selectedPathAlgo]?.applications || []}
+              pseudocode={PATHFINDING_ALGORITHMS[selectedPathAlgo]?.pseudocode || ''}
+              pseudocodeLegend={PATHFINDING_ALGORITHMS[selectedPathAlgo]?.pseudocodeLegend || {}}
+            />
+          </div>
+        </div>
+      </section>
     </div>
   );
 };

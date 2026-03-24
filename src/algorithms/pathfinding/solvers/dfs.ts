@@ -3,17 +3,31 @@ import type { Step } from './index';
 export const dfsMetadata = {
   id: 'dfs',
   name: 'Depth-First Search (DFS)',
-  description: 'DFS es un algoritmo de búsqueda que explora tan profundo como sea posible a lo largo de cada rama antes de retroceder. No garantiza encontrar el camino más corto, pero gasta muy poca memoria.',
+  description: 'Depth-First Search (Búsqueda en Profundidad) es un algoritmo de exploración voraz que avanza iterativamente lo más profundo que le es físicamente posible a lo largo de un solo pasillo continuo. Solo una vez que se topa con un callejón sin salida (absolutamente rodeado de muros o de espacios visitados), rectifica sobre sus propios pasos retrocediendo y explora la siguiente ramificación que haya dejado atrás (backtracking).\n\nVisualmente, simula el comportamiento de una persona atravesando un laberinto real de manera exhaustiva eligiendo siempre un lado y siguiéndolo religiosamente. Esta mentalidad sesgada y obcecada lo vuelve uno de los peores algoritmos para buscar distancias óptimas, no ofreciendo ninguna garantía de que el camino que halle sea ni de cerca el más corto. Resulta, sin embargo, muy barato computacionalmente para detectar ciclos y ramificaciones completas.',
   characteristics: [
-    "No garantiza el camino más corto.",
-    "Complejidad temporal: O(V + E).",
-    "Usa una estructura de pila (LIFO)."
+    "No garantiza casi nunca el camino más corto o expedito.",
+    "Complejidad temporal máxima: O(V + E).",
+    "Utiliza mecánicamente y de raíz una estructura basada en Pila de llamadas (LIFO)."
   ],
   applications: [
-    "Generación y resolución de laberintos.",
-    "Detección de ciclos en grafos.",
-    "Búsquedas exhaustivas donde la profundidad importa."
+    "Generación artística y resolución de laberintos de grandes recorridos.",
+    "Detección matemática de ciclos nocivos en grafos direccionados.",
+    "Búsquedas robóticas exhaustivas de fuerza bruta donde la profundidad es lo único que importa."
   ],
+  pseudocode: `Pila = [Inicio]
+Mientras Pila no esté vacía:
+  Actual = Sacar último elemento de Pila
+  Si Actual == Fin: Retornar Camino
+  Para cada Vecino de Actual:
+    Si Vecino no ha sido visitado:
+      Marcar como visitado
+      Insertar en Pila`,
+  pseudocodeLegend: {
+    'Pila': 'Estructura LIFO (Last In, First Out). Como un mazo de cartas de mesa: se coloca un elemento nuevo encima, y al sacar o desapilar, se extrae exactamente ese último que se ha puesto restándole base.',
+    'Actual': 'La celda que protagoniza la ejecución monopolizando el escenario computacional en un determinado sub-paso u iteración.',
+    'Vecino': 'Posibles pasos físicos cardinales no bloqueados contundentemente por un muro sólido.',
+    'Visitado': 'Marcador tóxico de territorio que le informa en secreto al algoritmo que no debe volver a pisar esa baldosa jamás para no cerrarse ininteligentes bucles viciosos e infinitos.'
+  },
   isImplemented: true
 };
 

@@ -3,7 +3,31 @@ import type { MazeStep } from './index';
 export const recursiveDFSMetadata = {
   id: 'recursive',
   name: 'Recursive DFS (Backtracker)',
-  description: 'Genera un laberinto "perfecto" (sin bucles) perforando muros en trayectorias tortuosas aleatorias.',
+  description: 'DFS Recursivo o "Backtracker", es el algoritmo más famoso y emblemático a la hora de esculpir y diseñar un laberinto procedimental digno y complejo. Funciona perforando sin descanso y de forma continua galerías serpenteantes hacia rumbos cardinales aleatorios, escarbando paredes macizas como una lombriz obstinada.\n\nCuando entra irremediablemente en un callejón sin salida del cual no hay muros no visitados que derruir a su paso, acude a lo que se conoce matemáticamente como "Backtracking". Esto significa desandar sus pasos rebobinando iterativamente su propia Pila de memoria hasta encontrar un nodo o cruce donde haya quedado un vecino libre pendiente y así seguir perforando.',
+  characteristics: [
+    'Genera pasillos largos y muy tortuosos (comúnmente llamado "River tendency").',
+    'Es un laberinto "Perfecto" (sin ciclos ni isletas inalcanzables).',
+    'Fácil implementación con Pila, pero con un claro sesgo serpenteante y pocos caminos muertos.'
+  ],
+  applications: [
+    'Juegos tradicionales impresos de resolver laberintos con lápiz desde la entrada a la salida.',
+    'Generación procedimental clásica, orgánica y exigente para juegos de mazmorras.'
+  ],
+  pseudocode: `Marcar celda inicial como visitada y añadir a Pila
+Mientras Pila no esté vacía:
+  Actual = Cima de Pila
+  Si Actual tiene Vecinos no visitados:
+    V = Elegir Vecino aleatorio
+    Romper Muro entre Actual y V
+    Marcar V como visitado y añadir a Pila
+  Sino:
+    Sacar Actual de Pila`,
+  pseudocodeLegend: {
+    'Visitar': 'La acción matemática de marcar una coordenada de la cuadrícula para que la "lombriz excavadora" no vuelva a pasar por ahí.',
+    'Muro': 'División o tabique opaco que separa estructuralmente dos celdas del grid espacial bidimensional.',
+    'V (Vecino)': 'Celda colindante en cualquiera de las cuatro orientaciones cardinales. Su elección estocástica garantiza la cualidad tortuosa final.',
+    'Pila': 'Estructura LIFO usada intrínsecamente para recordar la ruta actual y poder "desandar" el camino al estrellarse contra un callejón ciego.'
+  },
   isImplemented: true
 };
 
