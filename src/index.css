@@ -1,0 +1,138 @@
+@import "tailwindcss";
+
+@theme {
+  --color-crema: #Fdfcf8;
+  --color-carbon: #1a1a1a;
+  --color-sepia: #f1efea;
+  --color-accent: #3b82f6;
+  --font-mono: ui-monospace, Consolas, monospace;
+}
+
+:root {
+  background-color: var(--color-crema);
+  color: var(--color-carbon);
+  font-family: var(--font-mono);
+}
+
+body {
+  margin: 0;
+  overflow-x: hidden;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+@layer components {
+
+  /* Typography */
+  .heading-1 {
+    @apply text-3xl font-bold tracking-tighter text-carbon;
+  }
+
+  .heading-2 {
+    @apply text-xl font-bold text-carbon;
+  }
+
+  .text-body {
+    @apply text-lg leading-relaxed text-carbon/80;
+  }
+
+  /* Buttons */
+  .btn {
+    @apply px-4 py-2 text-sm font-mono tracking-wider transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed border leading-none flex items-center justify-center rounded-none uppercase;
+  }
+
+  .btn-primary {
+    @apply px-8 py-2.5 font-bold bg-carbon text-crema border-carbon hover:bg-crema hover:text-carbon shadow-sm;
+  }
+
+  .btn-secondary {
+    @apply bg-transparent text-carbon border-carbon hover:bg-carbon hover:text-crema font-medium;
+  }
+
+  .btn-outline {
+    @apply bg-transparent text-carbon border-sepia hover:border-carbon hover:bg-transparent font-normal;
+  }
+
+  .btn-danger {
+    @apply bg-transparent text-carbon border-transparent hover:bg-carbon hover:text-crema hover:border-carbon font-bold underline decoration-carbon/30 hover:decoration-transparent;
+  }
+
+  /* Speed Controls Mini Buttons */
+  .btn-speed {
+    @apply px-2 py-0.5 rounded-none text-xs font-mono uppercase transition-colors duration-300 border;
+  }
+
+  .btn-speed-active {
+    @apply px-2 py-0.5 rounded-none text-xs font-mono uppercase transition-colors duration-300 border border-carbon bg-carbon text-crema;
+  }
+
+  .btn-speed-inactive {
+    @apply px-2 py-0.5 rounded-none text-xs font-mono uppercase transition-colors duration-300 border border-transparent text-carbon hover:border-carbon hover:bg-transparent;
+  }
+
+  /* Form Inputs */
+  .form-select {
+    @apply px-3 py-2 border border-carbon rounded-none bg-transparent text-carbon text-sm font-mono outline-none transition-all cursor-pointer hover:bg-sepia focus:border-carbon focus:ring-1 focus:ring-carbon;
+  }
+
+  .form-select-primary {
+    @apply px-3 py-2 border-2 border-carbon rounded-none bg-crema text-carbon text-sm font-mono font-bold tracking-tight outline-none transition-all cursor-pointer hover:bg-sepia focus:border-carbon focus:ring-1 focus:ring-carbon;
+  }
+
+  /* Layout Modules */
+  .navbar {
+    @apply border-b-2 border-carbon px-8 py-4 flex justify-between items-center bg-crema shrink-0;
+  }
+
+  .nav-logo {
+    @apply w-8 h-8 bg-carbon rounded-none flex items-center justify-center border border-carbon;
+  }
+
+  .nav-logo-text {
+    @apply text-crema font-bold text-xl leading-none font-mono;
+  }
+
+  .nav-brand {
+    @apply text-xl font-bold tracking-widest uppercase font-mono text-carbon;
+  }
+
+  .toolbar {
+    @apply flex flex-wrap items-center justify-between p-4 border-b-2 border-carbon bg-crema gap-4 shrink-0 shadow-sm z-20;
+  }
+
+  .page-container {
+    @apply flex flex-col w-full;
+  }
+
+  .visualizer-container {
+    @apply flex flex-col h-[calc(100vh-65px)] w-full;
+  }
+
+  .info-section {
+    @apply px-12 py-16 bg-crema border-t border-sepia;
+  }
+
+  .info-content {
+    @apply max-w-3xl mx-auto space-y-6;
+  }
+
+  .info-grid {
+    @apply grid grid-cols-1 md:grid-cols-2 gap-8 pt-6;
+  }
+
+  /* Floating Badges */
+  .floating-badge {
+    @apply absolute bottom-6 left-1/2 -translate-x-1/2 text-sm font-medium text-carbon/80 bg-crema/90 px-4 py-2 rounded-md shadow-sm border border-sepia pointer-events-none z-10 opacity-60;
+  }
+
+  /* Groupings */
+  .card-box {
+    @apply space-y-3;
+  }
+
+  .list-bullets {
+    @apply list-disc list-inside space-y-2 text-carbon/80;
+  }
+}
