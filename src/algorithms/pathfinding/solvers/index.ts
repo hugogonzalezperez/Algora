@@ -33,15 +33,15 @@ import { jps, jpsMetadata } from './jps';
 export const PATHFINDING_ALGORITHMS: Record<string, AlgorithmMetadata> = {
   none: {
     id: 'none',
-    name: 'Solucionador de Caminos...',
-    description: 'Aún no has seleccionado ningún algoritmo de resolución de caminos en la barra de herramientas superior.\n\nLos algoritmos de resolución o Pathfinding se encargan de encontrar de forma inteligente y matemática la ruta existente entre un punto de Inicio y un punto de Fin. Algunos algoritmos son simples búsquedas exhaustivas a ciegas que se expanden hacia todos lados, mientras que otros están dotados de heurísticas calculadas que les permiten dirigirse casi rígidamente hacia la meta de forma veloz.',
+    name: 'Pathfinding Solver...',
+    description: 'You haven\'t selected a pathfinding algorithm yet.\n\nPathfinding algorithms find the optimal path between a start and end point. Some algorithms use simple blind searches, while others use heuristics to efficiently guide them toward the goal.',
     characteristics: [],
     applications: [],
     pseudocode: '',
     pseudocodeLegend: {
-      'Inicio': 'El nodo de partida desde donde el algoritmo de pathfinding arranca.',
-      'Fin': 'El nodo destino o meta que el algoritmo debe alcanzar para terminar.',
-      'Camino': 'La ruta final consolidada desde el Inicio hasta el Fin obtenida trazando los nodos correspondientes de paso en paso.'
+      'Inicio': 'The starting node where the pathfinding algorithm begins.',
+      'Fin': 'The destination node that the algorithm must reach to finish.',
+      'Camino': 'The final consolidated path from the Start to the End, obtained by tracing the corresponding nodes step by step.'
     },
     isImplemented: true,
     execute: function* () { /* fallback */ }

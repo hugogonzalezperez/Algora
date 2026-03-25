@@ -3,26 +3,26 @@ import type { MazeStep } from './index';
 export const primMetadata = {
   id: 'prim',
   name: "Prim's Algorithm",
-  description: 'El Algoritmo de Prim modificado para tallar laberintos ortogonales es una soberbia adaptación estocástica del clásico algoritmo matemático de grafos. A diferencia de las laberínticas formas serpenteantes del DFS, Prim genera laberintos frondosos, profusamente ramificados y orgánicamente texturizados, tal como si fuera un cristal de hielo creciendo o un micelio celular.\n\nComienza en una posición aleatoria y va agregando irremisiblemente los gruesos muros linderos inexplorados a una "Frontera" activa expansiva. En cada iteración, selecciona completamente al azar un muro perimetral de esa gran bolsa de contención y lo rompe, uniendo la celda diáfana con la inexplorada al otro lado del muro, dando lugar a una vasta red de pasillos capilarizados y abundantes callejones sin salida rápidos.',
+  description: 'The modified Prim\'s Algorithm for carving orthogonal mazes is a superb stochastic adaptation of the classic mathematical graph algorithm. Unlike the serpentine labyrinthine shapes of DFS, Prim generates lush, profusely branched, and organically textured mazes, as if it were a growing ice crystal or a cellular mycelium.\n\nIt begins at a random position and relentlessly adds the thick unexplored boundary walls to an active expansive "Frontier". In each iteration, it completely randomly selects a perimeter wall from that large containment bag and breaks it, joining the clear cell with the unexplored one on the other side of the wall, giving rise to a vast network of capillary passages and abundant quick dead ends.',
   characteristics: [
-    'Produce laberintos con una gran cantidad de pequeños recovecos y túneles (branching factor alto).',
-    'Las opciones aleatorias en la inmensa lista de muros le dan una textura visual uniforme, cristalizada y muy orgánica.',
-    'Es un laberinto "Perfecto" (sin isletas aisladas ni bucles), pero requiere mantener un gigantesco set en memoria.'
+    'Produces mazes with a large number of small nooks and tunnels (high branching factor).',
+    'The random options in the immense list of walls give it a uniform, crystallized, and very organic visual texture.',
+    'It is a "Perfect" maze (without isolated islets or loops), but it requires maintaining a gigantic set in memory.'
   ],
   applications: [
-    'Estética intrincada de cuevas ramificadas o túneles de hormigas.',
-    'Generación de mapas tácticos densos donde el jugador deba explorar habitación a habitación sin perderse demasiado en pasillos.'
+    'Intricate aesthetic of branched caves or ant tunnels.',
+    'Generation of dense tactical maps where the player must explore room by room without getting too lost in corridors.'
   ],
-  pseudocode: `Marcar Inicio y añadir vecinos a la "Frontera"
-Mientras Frontera no esté vacía:
-  C = Elegir celda de Frontera aleatoriamente
-  Conectar C con un vecino ya Visitado (aleatorio si hay varios)
-  Marcar C como Visitada
-  Añadir nuevos vecinos de C a la Frontera`,
+  pseudocode: `Mark Start and add neighbors to the "Frontier"
+While Frontier is not empty:
+  C = Choose a cell from Frontier randomly
+  Connect C with an already Visited neighbor (random if there are several)
+  Mark C as Visited
+  Add new neighbors of C to the Frontier`,
   pseudocodeLegend: {
-    'Frontera': 'El perímetro externo inestable o la coraza amurallada expansiva que rodea al conjunto aglutinado de celdas "Visitadas" e integradas a la sala base.',
-    'Aleatoriamente': 'La fortuita selección caótica que dictamina sin ningún sesgo qué muro de la inmensa frontera debe caer. Esto origina la naturaleza expansiva radial del laberinto.',
-    'Conectar': 'El sublime acto de derribar el obstáculo interpuesto entre la celda virgen y el laberinto funcional transitable, sumándola a la retícula caminable.'
+    'Frontier': 'The set of all wall segments that separate the visited part of the grid from the unvisited part.',
+    'Randomly': 'The choice made at each step to pick a wall from the frontier, which gives the maze its organic, crystalline growth pattern.',
+    'Connect': 'The manual act of removing a wall between a chosen frontier cell and the established maze.'
   },
   isImplemented: true
 };

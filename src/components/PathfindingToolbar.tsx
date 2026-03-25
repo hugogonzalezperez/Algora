@@ -1,5 +1,7 @@
 import { memo } from 'react';
-import type { AlgorithmMetadata } from '../algorithms/pathfinding/solvers';
+import type { AlgorithmMetadata } from '../types/pathfinding';
+import { SpeedControl } from './ui/SpeedControl';
+import { UnderlineButton } from './ui/UnderlineButton';
 
 interface PathfindingToolbarProps {
   isRunning: boolean;
@@ -16,6 +18,12 @@ interface PathfindingToolbarProps {
   selectedMazeAlgo: string;
   onMazeAlgoChange: (id: string) => void;
 }
+
+const PATHFINDING_SPEED_OPTIONS = [
+  { label: 'x0.5', value: 50 },
+  { label: 'x1',   value: 10 },
+  { label: 'Max',  value: 1  },
+];
 
 export const PathfindingToolbar = memo(({
   isRunning,
@@ -49,8 +57,8 @@ export const PathfindingToolbar = memo(({
             </option>
           ))}
         </select>
-        <button disabled={isRunning} onClick={onGenerate} className="btn-primary">
-          Generar
+        <button disabled={isRunning} onClick={onGenerate} className="btn-primary min-w-[100px] hover:ring-2 hover:ring-carbon hover:ring-offset-2 transition-all duration-300">
+          Generate
         </button>
       </div>
 
@@ -64,42 +72,26 @@ export const PathfindingToolbar = memo(({
         >
           {Object.values(pathAlgorithms).map((algo) => (
             <option key={algo.id} value={algo.id} disabled={!algo.isImplemented}>
-              {algo.name} {!algo.isImplemented ? '- Muy pronto' : ''}
+              {algo.name} {!algo.isImplemented ? '- Coming soon' : ''}
             </option>
           ))}
         </select>
         <button
           disabled={isRunning || !pathAlgorithms[selectedPathAlgo]?.isImplemented}
           onClick={onRun}
-          className="btn-primary"
+          className="btn-primary min-w-[100px] hover:ring-2 hover:ring-carbon hover:ring-offset-2 transition-all duration-300"
         >
-          Resolver
+          Solve
         </button>
       </div>
 
       {/* Section 3: Controls */}
-      <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2 border border-sepia rounded bg-crema px-2 py-1">
-          <span className="text-xs font-bold text-carbon/60 uppercase">Velocidad</span>
-          <button onClick={() => onSpeedChange(50)} className={speed === 50 ? 'btn-speed-active' : 'btn-speed-inactive'}>x0.5</button>
-          <button onClick={() => onSpeedChange(10)} className={speed === 10 ? 'btn-speed-active' : 'btn-speed-inactive'}>x1</button>
-          <button onClick={() => onSpeedChange(1)} className={speed === 1 ? 'btn-speed-active' : 'btn-speed-inactive'}>Max</button>
-        </div>
+      <div className="flex items-center flex gap-6 pr-6">
+        <SpeedControl speed={speed} onSpeedChange={onSpeedChange} options={PATHFINDING_SPEED_OPTIONS} />
 
-        <button
-          onClick={onStop}
-          disabled={!isRunning}
-          className="btn-danger"
-        >
-          Parar
-        </button>
-        <button
-          onClick={onReset}
-          disabled={isRunning}
-          className="btn-outline"
-        >
-          Limpiar Grid
-        </button>
+        <UnderlineButton label="Stop" onClick={onStop} disabled={!isRunning} />
+        <div className="hidden md:block w-[2px] h-10 bg-carbon/20 my-1"></div>
+        <UnderlineButton label="Clear" onClick={onReset} disabled={isRunning} />
       </div>
 
     </div>

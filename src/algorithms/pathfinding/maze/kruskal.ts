@@ -3,28 +3,28 @@ import type { MazeStep } from './index';
 export const kruskalMetadata = {
   id: 'kruskal',
   name: "Kruskal's Algorithm",
-  description: 'El Algoritmo de Kruskal aleatorizado es una joya basada en la teoría computacional de "Bosque de Árboles Disjuntos" o "Disjoint Sets". A diferencia de otros laberintos que crecen desde un solo punto (como Prim o DFS), Kruskal comienza derribando y uniendo muros de forma totalmente anárquica e independiente por toda la superficie del tablero al mismo tiempo.\n\nInicialmente cada celda de la cuadrícula es considerada su propio conjunto aislado. El algoritmo baraja todos y cada uno de los tabiques del mundo y comienza a evaluarlos uno a uno. Si el muro que está inspeccionando separa dos habitaciones que todavía pertenecen a "conjuntos distintos", el muro se destruye uniéndolas matemáticamente. Este crecimiento celular como múltiples burbujas aisladas que colisionan produce un ecosistema final repleto de pasillos cortos y soluciones muy equilibradas.',
+  description: 'The randomized Kruskal\'s Algorithm is a gem based on the computational theory of "Disjoint Set Forests". Unlike other mazes that grow from a single point (like Prim or DFS), Kruskal begins by knocking down and joining walls in a completely anarchic and independent manner across the entire surface of the board at the same time.\n\nInitially, each cell in the grid is considered its own isolated set. The algorithm shuffles every single wall in the world and begins to evaluate them one by one. If the wall it is inspecting separates two rooms that still belong to "distinct sets", the wall is destroyed, mathematically joining them. This cellular growth, like multiple isolated bubbles colliding, produces a final ecosystem full of short passages and very balanced solutions.',
   characteristics: [
-    'Estética de áreas disjuntas que van conformando un laberinto global paso a paso.',
-    'Forma un laberinto estandarizado "Perfecto" (sin bucles cerrados ni islas inalcanzables).',
-    'Crecimiento homogéneo desde múltiples zonas del mapa, evitando cuellos de botella obvios.'
+    'Aesthetics of disjoint areas that gradually form a global maze step by step.',
+    'Forms a standardized "Perfect" maze (without closed loops or unreachable islands).',
+    'Homogeneous growth from multiple areas of the map, avoiding obvious bottlenecks.'
   ],
   applications: [
-    'Generación de mapas competitivos donde se desea una distribución muy equilibrada de puntos ciegos.',
-    'Juegos RPG con estética natural de "pequeños ecosistemas aislados" fusionándose progresivamente.'
+    'Generation of competitive maps where a very balanced distribution of blind spots is desired.',
+    'RPG games with a natural aesthetic of "small isolated ecosystems" merging progressively.'
   ],
-  pseudocode: `Cada Celda es un "Conjunto" distinto
-Barajar todos los Muros aleatoriamente
-Para cada Muro en la lista:
-  C1, C2 = Celdas adyacentes al Muro
-  Si C1 y C2 NO están en el mismo Conjunto:
-    Romper el Muro
-    Unir el Conjunto de C1 con C2`,
+  pseudocode: `Each Cell is a "Disjoint Set"
+Shuffle all Walls randomly
+For each Wall in the list:
+  C1, C2 = Cells adjacent to the Wall
+  If C1 and C2 are NOT in the same Set:
+    Break the Wall
+    Unite the Set of C1 with C2`,
   pseudocodeLegend: {
-    'Conjunto': 'Grupo de una o más celdas que ya están comunicadas entre ellas de forma ininterrumpida por pasillos francos abiertos.',
-    'Barajar': 'Ordenar al azar absolutamente todos los tabiques o muros del mapa inicial para garantizar la homogeneidad e imprevisión del tallado general uniformemente estático.',
-    'Muro': 'Pieza del tablero que se evalúa silenciosamente una sola vez en cada ciclo ineludible o iterativo para determinar si de hecho se consolida eternamente o en efecto debe desintegrarse irremisiblemente reventada y sepultada.',
-    'Unir': 'Fusión matemática y lógica implacable dictatorial imponente (usando la genialidad de compresión Path Compression) de un dúo dispar acantonado de diseminados dispares e insospechados grupos pretéritos insulsos e inauditos de baldosas que ahora se aglutinarán englobándose inanes por siempre acopladas en su suerte conectadas.'
+    'Set': 'A logical group of one or more cells that are already connected to each other by open passages.',
+    'Shuffle': 'The act of randomly ordering all potential walls to ensure the maze grows uniformly and unpredictably from multiple points.',
+    'Wall': 'A barrier between two cells. If it separates two different sets, it is removed to connect them.',
+    'Unite': 'The mathematical fusion of two disjoint sets using Union-Find, ensuring that every part of the maze eventually connects without forming loops.'
   },
   isImplemented: true
 };

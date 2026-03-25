@@ -13,7 +13,7 @@ export const PathfindingPage = () => {
   const [endNode, setEndNode] = useState({ x: 0, y: 0 });
 
   const [isRunning, setIsRunning] = useState(false);
-  const [speed, setSpeed] = useState(5); // Delay en ms
+  const [speed, setSpeed] = useState(10); // Delay en ms (x1)
   const stopRequested = useRef(false);
   const [draggingNode, setDraggingNode] = useState<'start' | 'end' | null>(null);
   const initialDragPosition = useRef<{ x: number, y: number } | null>(null);
@@ -145,7 +145,7 @@ export const PathfindingPage = () => {
     if (isRunning || !gridSize.rows || !gridSize.cols) return;
 
     if (selectedPathAlgo === 'none') {
-      alert("Se tiene que seleccionar un algoritmo para el caso en concreto que está sin seleccionar.");
+      alert("A pathfinding algorithm must be selected before starting.");
       return;
     }
 
@@ -240,7 +240,7 @@ export const PathfindingPage = () => {
   const generateMaze = async () => {
     if (isRunning) return;
     if (selectedMazeAlgo === 'none') {
-      alert("Se tiene que seleccionar un algoritmo para el caso en concreto que está sin seleccionar.");
+      alert("A maze generation algorithm must be selected before starting.");
       resetGrid();
       return;
     }
@@ -264,7 +264,7 @@ export const PathfindingPage = () => {
 
     const algo = MAZE_ALGORITHMS[selectedMazeAlgo];
     if (!algo || !algo.isImplemented) {
-      alert("Este algoritmo de laberintos no está implementado aún.");
+      alert("This maze algorithm is not implemented yet.");
       setIsRunning(false);
       return;
     }
@@ -341,7 +341,7 @@ export const PathfindingPage = () => {
           )}
 
           <div className="floating-badge">
-            Arrastra Inicio/Fin • Click para dibujar muros • Scroll abajo para Info ↓
+            Drag Start/End • Click to draw walls • Scroll down for Info ↓
           </div>
         </div>
       </div>
@@ -352,8 +352,8 @@ export const PathfindingPage = () => {
           {/* Generation Algorithm Column */}
           <div className="flex-1">
             <AlgorithmInfo
-              title={MAZE_ALGORITHMS[selectedMazeAlgo]?.name || 'Algoritmo de Generación'}
-              description={MAZE_ALGORITHMS[selectedMazeAlgo]?.description || 'Selecciona un algoritmo de generación de laberintos en la barra de herramientas.'}
+              title={MAZE_ALGORITHMS[selectedMazeAlgo]?.name || 'Generation Algorithm'}
+              description={MAZE_ALGORITHMS[selectedMazeAlgo]?.description || 'Select a maze generation algorithm in the toolbar.'}
               characteristics={MAZE_ALGORITHMS[selectedMazeAlgo]?.characteristics || []}
               applications={MAZE_ALGORITHMS[selectedMazeAlgo]?.applications || []}
               pseudocode={MAZE_ALGORITHMS[selectedMazeAlgo]?.pseudocode || ''}
@@ -366,8 +366,8 @@ export const PathfindingPage = () => {
           {/* Resolution Algorithm Column */}
           <div className="flex-1">
             <AlgorithmInfo
-              title={PATHFINDING_ALGORITHMS[selectedPathAlgo]?.name || 'Algoritmo de Resolución'}
-              description={PATHFINDING_ALGORITHMS[selectedPathAlgo]?.description || 'Selecciona un algoritmo de resolución de caminos en la barra de herramientas.'}
+              title={PATHFINDING_ALGORITHMS[selectedPathAlgo]?.name || 'Resolution Algorithm'}
+              description={PATHFINDING_ALGORITHMS[selectedPathAlgo]?.description || 'Select a pathfinding algorithm in the toolbar.'}
               characteristics={PATHFINDING_ALGORITHMS[selectedPathAlgo]?.characteristics || []}
               applications={PATHFINDING_ALGORITHMS[selectedPathAlgo]?.applications || []}
               pseudocode={PATHFINDING_ALGORITHMS[selectedPathAlgo]?.pseudocode || ''}

@@ -3,37 +3,94 @@ import type { Step } from './index';
 export const dijkstraMetadata = {
   id: 'dijkstra',
   name: "Dijkstra's Algorithm",
-  description: 'Nombrado en honor a su creador Edsger W. Dijkstra, este algoritmo clásico y riguroso es el "padre fundador" del Pathfinding moderno. Garantiza de forma irrefutable encontrar el camino más corto en toda situación calculando meticulosamente la distancia real de absolutamente todos los nodos a los que sea capaz de acceder, extendiéndose equitativamente en forma circular u oleada.\n\nA diferencia del ágil A*, Dijkstra sufre por carecer de Heurística. Es decir, el algoritmo no tiene idea de en qué dirección se sitúa la Meta, por lo que se ve obligado a explorar su entorno al completo, calculando el precio desde el origen hacia cada una de las bifurcaciones y esquinas del mapa sin ningún favoritismo geométrico. Su poder brilla cuando el terreno cuenta con "costes de movimiento" variables.',
+  description: 'Named after the legendary Edsger W. Dijkstra, this algorithm is the "founding father" of modern pathfinding. Its approach is purely mathematical and guaranteed: it expands a uniform ripple from the origin, calculating the exact cost to reach every corner of the map without leaving any option to chance.\\n\\nUnlike A*, Dijkstra does not use a compass (heuristic); it is a "blind" but infallible search that explores all possibilities until it finds the goal. Its true magic happens in terrains with variable costs, where it must decide whether to go around a mountain or cross a swamp based solely on the path\'s accumulated weight.',
   characteristics: [
-    'Garantiza encontrar el camino más corto de forma incondicional.',
-    'Menos eficiente sin ayuda de heurística (es una búsqueda ciega).',
-    'Explora exhaustivamente en todas direcciones de forma uniforme.'
+    'Always guarantees the shortest path mathematically and unconditionally.',
+    'Uniform search in all directions (no bias toward the goal).',
+    'Ideal for weighted graphs (e.g., difficult terrains, tolls).'
   ],
   applications: [
-    'Enrutamiento clásico de redes y telecomunicaciones (OSPF).',
-    'Cálculo de rutas en terrenos con costes de peaje variables o accidentados.'
+    'Internet routing protocols (like OSPF).',
+    'Logistics and distribution with dynamic transport costs.',
+    'High-complexity electrical grids and piping systems.'
   ],
-  pseudocode: `Desconocidos = [Todos los nodos], Dist[Inicio] = 0
-Mientras Desconocidos no esté vacío:
-  Actual = Nodo en Desconocidos con menor Dist
-  Si Actual == Fin: Retornar Camino
-  Para cada Vecino de Actual:
-    nueva_Dist = Dist[Actual] + Coste(Actual, Vecino)
-    Si nueva_Dist < Dist[Vecino]:
-      Dist[Vecino] = nueva_Dist`,
+  pseudocode: `Open = [Start], G[Start] = 0
+While Open is not empty:
+  Current = Node in Open with lowest G
+  If Current == End: Return Path
+  For each Neighbor of Current:
+    new_G = G[Current] + Weight(Current, Neighbor)
+    If new_G < G[Neighbor]:
+      G[Neighbor] = new_G
+      Add Neighbor to Open (Min-Heap)`,
   pseudocodeLegend: {
-    'Desconocidos': 'Lista de nodos que todavía faltan o son candidatos a ser valorados. Inician con distancia absoluta de "Infinito" provisionalmente.',
-    'Dist': 'El registro general de la distancia o coste mínimo acumulado comprobado para llegar desde la salida franca hasta un destino descubierto.',
-    'Coste': 'El precio físico de moverse presencialmente de una casilla a la de al lado (un paso diagonal puro suele valer más que un paso recto).',
-    'Actual': 'El afortunado nodo de la lista de Desconocidos que ostenta indiscutiblemente la distancia acumulada más baja y atractiva en ese momento.'
+    'Open': 'Priority Queue (Min-Heap) that keeps discovered nodes in check, always prioritizing the one with the lowest accumulated cost.',
+    'G': 'The actual and tangible cost accumulated from the starting point to the node in question.',
+    'Weight': 'The numerical value of moving to a neighbor (1 for straights, √2 for diagonals).',
+    'Current': 'The node with the shortest verified path so far in the waiting list.'
   },
   isImplemented: true
 };
 
-interface DijkstraNode {
-  x: number;
-  y: number;
-  g: number;
+// Priority Queue simple para Dijkstra / A* (Min-Heap)
+class PriorityQueue<T> {
+  private heap: T[] = [];
+  private comparator: (a: T, b: T) => number;
+  constructor(comparator: (a: T, b: T) => number) {
+    this.comparator = comparator;
+  }
+
+  push(item: T) {
+    this.heap.push(item);
+    this.siftUp();
+  }
+
+  pop(): T | undefined {
+    if (this.size() === 0) return undefined;
+    const top = this.heap[0];
+    const last = this.heap.pop()!;
+    if (this.size() > 0) {
+      this.heap[0] = last;
+      this.siftDown();
+    }
+    return top;
+  }
+
+  size() {
+    return this.heap.length;
+  }
+
+  private siftUp() {
+    let nodeIdx = this.heap.length - 1;
+    while (nodeIdx > 0) {
+      const parentIdx = (nodeIdx - 1) >>> 1;
+      if (this.comparator(this.heap[nodeIdx], this.heap[parentIdx]) < 0) {
+        [this.heap[nodeIdx], this.heap[parentIdx]] = [this.heap[parentIdx], this.heap[nodeIdx]];
+        nodeIdx = parentIdx;
+      } else break;
+    }
+  }
+
+  private siftDown() {
+    let nodeIdx = 0;
+    while (true) {
+      let smallestIdx = nodeIdx;
+      const leftChildIdx = (nodeIdx << 1) + 1;
+      const rightChildIdx = (nodeIdx << 1) + 2;
+
+      if (leftChildIdx < this.heap.length && this.comparator(this.heap[leftChildIdx], this.heap[smallestIdx]) < 0) {
+        smallestIdx = leftChildIdx;
+      }
+      if (rightChildIdx < this.heap.length && this.comparator(this.heap[rightChildIdx], this.heap[smallestIdx]) < 0) {
+        smallestIdx = rightChildIdx;
+      }
+
+      if (smallestIdx !== nodeIdx) {
+        [this.heap[nodeIdx], this.heap[smallestIdx]] = [this.heap[smallestIdx], this.heap[nodeIdx]];
+        nodeIdx = smallestIdx;
+      } else break;
+    }
+  }
 }
 
 export function* dijkstra(
@@ -43,81 +100,84 @@ export function* dijkstra(
   rows: number,
   cols: number
 ): Generator<Step, void, unknown> {
-  const openSet: DijkstraNode[] = [{ x: start.x, y: start.y, g: 0 }];
-  const inOpenSet = new Map<string, DijkstraNode>();
-  inOpenSet.set(`${start.x},${start.y}`, openSet[0]);
-  
-  const closedSet = new Set<string>();
+
+  const isWalkable = (x: number, y: number) => {
+    return x >= 0 && x < cols && y >= 0 && y < rows && !grid[y][x];
+  };
+
+  const gScore: number[][] = Array.from({ length: rows }, () => new Array(cols).fill(Infinity));
+  gScore[start.y][start.x] = 0;
+
   const parent = new Map<string, { x: number; y: number } | null>();
   parent.set(`${start.x},${start.y}`, null);
 
-  const gScore = new Map<string, number>();
-  gScore.set(`${start.x},${start.y}`, 0);
+  const closedSet = new Set<string>();
+
+  type DijkstraNode = { g: number; x: number; y: number };
+  const openSet = new PriorityQueue<DijkstraNode>((a, b) => a.g - b.g);
+
+  openSet.push({ g: 0, x: start.x, y: start.y });
 
   yield { ...start, type: 'visited' };
 
-  while (openSet.length > 0) {
-    // Dijkstra solo procesa por peso real G (sin distancia hacia la meta)
-    openSet.sort((a, b) => a.g - b.g);
-    const current = openSet.shift()!;
-    const curKey = `${current.x},${current.y}`;
+  while (openSet.size() > 0) {
+    const current = openSet.pop()!;
+    const { x: cx, y: cy } = current;
+    const curKey = `${cx},${cy}`;
 
     if (closedSet.has(curKey)) continue;
     closedSet.add(curKey);
-    inOpenSet.delete(curKey);
 
-    if (!(current.x === start.x && current.y === start.y)) {
-      yield { x: current.x, y: current.y, type: 'visited' };
+    if (!(cx === start.x && cy === start.y)) {
+      yield { x: cx, y: cy, type: 'visited' };
     }
 
-    if (current.x === end.x && current.y === end.y) {
+    if (cx === end.x && cy === end.y) {
       const path: Step[] = [];
-      let curr: { x: number, y: number } | null = current;
-      while (curr) {
-        path.push({ ...curr, type: 'path' });
-        curr = parent.get(`${curr.x},${curr.y}`) || null;
+      let curr: { x: number; y: number } | null = { x: cx, y: cy };
+      while (curr !== null) {
+        path.push({ x: curr.x, y: curr.y, type: 'path' });
+        curr = parent.get(`${curr.x},${curr.y}`) ?? null;
       }
-      
       path.reverse();
-      for (const step of path) {
-        yield step;
-      }
+      for (const step of path) yield step;
       return;
     }
 
-    const currentG = gScore.get(curKey) ?? Infinity;
+    const currentG = gScore[cy][cx];
 
-    const neighbors = [
-      { x: current.x, y: current.y - 1 },
-      { x: current.x + 1, y: current.y },
-      { x: current.x, y: current.y + 1 },
-      { x: current.x - 1, y: current.y },
+    // 8 Direcciones: Cardinales + Diagonales
+    const dirs = [
+      { dx: 1, dy: 0, cost: 1 },
+      { dx: -1, dy: 0, cost: 1 },
+      { dx: 0, dy: 1, cost: 1 },
+      { dx: 0, dy: -1, cost: 1 },
+      { dx: 1, dy: 1, cost: Math.sqrt(2) },
+      { dx: 1, dy: -1, cost: Math.sqrt(2) },
+      { dx: -1, dy: 1, cost: Math.sqrt(2) },
+      { dx: -1, dy: -1, cost: Math.sqrt(2) },
     ];
 
-    for (const neighbor of neighbors) {
-      if (
-        neighbor.x >= 0 && neighbor.x < cols &&
-        neighbor.y >= 0 && neighbor.y < rows &&
-        !grid[neighbor.y][neighbor.x]
-      ) {
-        const neighborKey = `${neighbor.x},${neighbor.y}`;
-        if (closedSet.has(neighborKey)) continue;
+    for (const { dx, dy, cost } of dirs) {
+      const nx = cx + dx;
+      const ny = cy + dy;
 
-        const tentativeG = currentG + 1; // Coste uniforme de moverse 1 bloque
-        
-        if (tentativeG < (gScore.get(neighborKey) ?? Infinity)) {
-          parent.set(neighborKey, current);
-          gScore.set(neighborKey, tentativeG);
-          
-          const existing = inOpenSet.get(neighborKey);
-          if (!existing) {
-            const newNode = { x: neighbor.x, y: neighbor.y, g: tentativeG };
-            openSet.push(newNode);
-            inOpenSet.set(neighborKey, newNode);
-          } else {
-             existing.g = tentativeG;
-          }
-        }
+      if (!isWalkable(nx, ny)) continue;
+
+      // REGLA DE ESQUINAS RELAJADA: Solo prohibir diagonal si AMBOS vecinos cardinales son muros
+      if (dx !== 0 && dy !== 0) {
+        if (!isWalkable(nx, cy) && !isWalkable(cx, ny)) continue;
+      }
+
+      const nKey = `${nx},${ny}`;
+      if (closedSet.has(nKey)) continue;
+
+      const tentativeG = currentG + cost;
+
+      if (tentativeG < gScore[ny][nx]) {
+        gScore[ny][nx] = tentativeG;
+        parent.set(nKey, { x: cx, y: cy });
+        openSet.push({ g: tentativeG, x: nx, y: ny });
       }
     }
   }

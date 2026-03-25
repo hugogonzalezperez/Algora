@@ -1,11 +1,12 @@
 @import "tailwindcss";
 
 @theme {
-  --color-crema: #Fdfcf8;
-  --color-carbon: #1a1a1a;
-  --color-sepia: #f1efea;
+  --color-crema: #FAF9F5;
+  --color-carbon: #1B1C1A;
+  --color-sepia: #F1EFEA;
   --color-accent: #3b82f6;
   --font-mono: ui-monospace, Consolas, monospace;
+  --font-headline: 'Space Grotesk', sans-serif;
 }
 
 :root {
@@ -83,7 +84,7 @@ body {
 
   /* Layout Modules */
   .navbar {
-    @apply border-b-2 border-carbon px-8 py-4 flex justify-between items-center bg-crema shrink-0;
+    @apply border-b-2 border-carbon px-8 py-4 flex justify-between items-center bg-crema shrink-0 ;
   }
 
   .nav-logo {
@@ -100,6 +101,10 @@ body {
 
   .toolbar {
     @apply flex flex-wrap items-center justify-between p-4 border-b-2 border-carbon bg-crema gap-4 shrink-0 shadow-sm z-20;
+  }
+
+  .toolbar-noborder {
+    @apply flex flex-wrap items-center justify-between p-4 bg-crema gap-4 shrink-0 shadow-sm z-20;
   }
 
   .page-container {
@@ -134,5 +139,15 @@ body {
 
   .list-bullets {
     @apply list-disc list-inside space-y-2 text-carbon/80;
+  }
+
+  .bg-caution {
+    background: repeating-linear-gradient(
+      -45deg,
+      var(--color-sepia),
+      var(--color-sepia) 8px,
+      rgba(27, 28, 26, 0.15) 8px,
+      rgba(27, 28, 26, 0.15) 16px
+    );
   }
 }

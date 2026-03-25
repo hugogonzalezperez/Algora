@@ -3,30 +3,30 @@ import type { Step } from './index';
 export const dfsMetadata = {
   id: 'dfs',
   name: 'Depth-First Search (DFS)',
-  description: 'Depth-First Search (Búsqueda en Profundidad) es un algoritmo de exploración voraz que avanza iterativamente lo más profundo que le es físicamente posible a lo largo de un solo pasillo continuo. Solo una vez que se topa con un callejón sin salida (absolutamente rodeado de muros o de espacios visitados), rectifica sobre sus propios pasos retrocediendo y explora la siguiente ramificación que haya dejado atrás (backtracking).\n\nVisualmente, simula el comportamiento de una persona atravesando un laberinto real de manera exhaustiva eligiendo siempre un lado y siguiéndolo religiosamente. Esta mentalidad sesgada y obcecada lo vuelve uno de los peores algoritmos para buscar distancias óptimas, no ofreciendo ninguna garantía de que el camino que halle sea ni de cerca el más corto. Resulta, sin embargo, muy barato computacionalmente para detectar ciclos y ramificaciones completas.',
+  description: 'Depth-First Search (DFS) is an intrepid exploration algorithm that prioritizes depth over breadth. Imagine an explorer in a cave deciding to follow a single tunnel to its very end before backtracking to try another; that is the essence of DFS.\\n\\nIt is a "greedy" algorithm that moves forward until it hits a wall or obstacle, at which point it uses a technique called "Backtracking" to resume from the last known fork. While it does not guarantee the shortest path, it is extremely efficient for discovering the complete structure of a maze or detecting cycles in complex systems.',
   characteristics: [
-    "No garantiza casi nunca el camino más corto o expedito.",
-    "Complejidad temporal máxima: O(V + E).",
-    "Utiliza mecánicamente y de raíz una estructura basada en Pila de llamadas (LIFO)."
+    'Deep vertical exploration (goes to the bottom before branching).',
+    'Does not guarantee the shortest path (may take massive detours).',
+    'Data Structure: Uses a Stack following the LIFO principle.'
   ],
   applications: [
-    "Generación artística y resolución de laberintos de grandes recorridos.",
-    "Detección matemática de ciclos nocivos en grafos direccionados.",
-    "Búsquedas robóticas exhaustivas de fuerza bruta donde la profundidad es lo único que importa."
+    'Generating and solving complex mazes.',
+    'Cycle detection in network topologies and software dependencies.',
+    'Board game analysis and decision-making in logic trees.'
   ],
-  pseudocode: `Pila = [Inicio]
-Mientras Pila no esté vacía:
-  Actual = Sacar último elemento de Pila
-  Si Actual == Fin: Retornar Camino
-  Para cada Vecino de Actual:
-    Si Vecino no ha sido visitado:
-      Marcar como visitado
-      Insertar en Pila`,
+  pseudocode: `Stack = [Start], Visited = {Start}
+While Stack is not empty:
+  Current = Pop last element from Stack (Pop)
+  If Current == End: Return Path
+  For each Neighbor of Current:
+    If Neighbor is not Visited:
+      Mark Neighbor as Visited
+      Add Neighbor to Stack`,
   pseudocodeLegend: {
-    'Pila': 'Estructura LIFO (Last In, First Out). Como un mazo de cartas de mesa: se coloca un elemento nuevo encima, y al sacar o desapilar, se extrae exactamente ese último que se ha puesto restándole base.',
-    'Actual': 'La celda que protagoniza la ejecución monopolizando el escenario computacional en un determinado sub-paso u iteración.',
-    'Vecino': 'Posibles pasos físicos cardinales no bloqueados contundentemente por un muro sólido.',
-    'Visitado': 'Marcador tóxico de territorio que le informa en secreto al algoritmo que no debe volver a pisar esa baldosa jamás para no cerrarse ininteligentes bucles viciosos e infinitos.'
+    'Stack': 'LIFO (Last In, First Out) structure. The last element to enter is always the first to be processed.',
+    'Current': 'The node being explored in the current step of the algorithm.',
+    'Backtracking': "The ability to step back on one's own tracks when reaching a dead end.",
+    'Visited': 'Security filter that prevents the algorithm from entering infinite loops.'
   },
   isImplemented: true
 };

@@ -2,35 +2,39 @@ import { useState } from 'react';
 import { PathfindingPage } from './pages/PathfindingPage';
 import { SortingPage } from './pages/SortingPage';
 
+const PAGES = { PATH: 'path', SORT: 'sort' } as const;
+type Page = typeof PAGES[keyof typeof PAGES];
+
 export default function App() {
-  const [currentPage, setCurrentPage] = useState<'path' | 'sort'>('path');
+  const [currentPage, setCurrentPage] = useState<Page>(PAGES.SORT);
 
   return (
-    <div className="min-h-screen bg-crema text-carbon font-mono">
-      {/* Header Minimalista */}
-      <nav className="border-b border-sepia px-8 py-4 flex justify-between items-center">
-        <div className="flex items-center gap-8">
-          <span className="font-bold text-lg tracking-tighter">Algora</span>
-          <div className="flex gap-4 text-sm font-medium">
+    <div className="min-h-screen bg-crema text-carbon font-mono flex flex-col">
+      {/* Header Minimalista - Unified for both pages */}
+      <nav className="border-b border-sepia px-8 py-4 flex justify-between items-center bg-crema">
+        <div className="flex items-center gap-10">
+          <span className="font-bold text-3xl tracking-tighter">Algora</span>
+          <div className="flex gap-6 text-sm font-bold">
             <button
-              onClick={() => setCurrentPage('path')}
-              className={`${currentPage === 'path' ? 'opacity-100' : 'opacity-40'} hover:opacity-100 transition-opacity`}
+              onClick={() => setCurrentPage(PAGES.PATH)}
+              className={`relative py-1 ${currentPage === PAGES.PATH ? 'opacity-100' : 'opacity-40'} hover:opacity-100 transition-all uppercase group`}
             >
               Pathfinding
+              <div className={`absolute -bottom-1 left-0 w-full h-[2px] bg-carbon transition-all duration-300 origin-left ${currentPage === PAGES.PATH ? 'scale-x-100 opacity-100' : 'scale-x-0 group-hover:scale-x-100 opacity-30'}`} />
             </button>
             <button
-              onClick={() => setCurrentPage('sort')}
-              className={`${currentPage === 'sort' ? 'opacity-100' : 'opacity-40'} hover:opacity-100 transition-opacity`}
+              onClick={() => setCurrentPage(PAGES.SORT)}
+              className={`relative py-1 ${currentPage === PAGES.SORT ? 'opacity-100' : 'opacity-40'} hover:opacity-100 transition-all uppercase group`}
             >
               Sorting
+              <div className={`absolute -bottom-1 left-0 w-full h-[2px] bg-carbon transition-all duration-300 origin-left ${currentPage === PAGES.SORT ? 'scale-x-100 opacity-100' : 'scale-x-0 group-hover:scale-x-100 opacity-30'}`} />
             </button>
           </div>
         </div>
       </nav>
 
-      {/* Renderizado Condicional de Páginas */}
-      <main className="p-0">
-        {currentPage === 'path' ? <PathfindingPage /> : <SortingPage />}
+      <main className="flex-grow">
+        {currentPage === PAGES.PATH ? <PathfindingPage /> : <SortingPage />}
       </main>
     </div>
   );

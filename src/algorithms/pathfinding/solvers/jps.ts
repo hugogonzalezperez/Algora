@@ -3,32 +3,93 @@ import type { Step } from './index';
 export const jpsMetadata = {
   id: 'jps',
   name: 'Jump Point Search (JPS)',
-  description: 'Jump Point Search (Búsqueda por Puntos de Salto) es una apoteósica obra maestra de la optimización asimétrica para el algoritmo A*. Su modus operandi consiste en "teletransportarse" a largas distancias y en línea recta a través de enormes áreas abiertas saltándose e ignorando por completo la tediosa lectura iterativa de las celdas irrelevantes.\n\nEn lugar de revisar paso por paso las baldosas contiguas de su alrededor (como hace servicialmente el A* clásico), JPS escanea líneas rectas y diagonales disparando una suerte de rayo direccional buscando únicamente de forma exclusiva "Puntos de Salto" (esquinas de muros, recovecos u obstáculos estratégicos forzados ineludibles). Tan solo registra dichos nodos clave, y desecha mentalmente absolutamente todo el pasillo intermedio transitable llano que ya dio por conquistado de antemano. Soporta de forma magistral movimiento diagonal completo.',
+  description: 'Jump Point Search (JPS) is an amazing optimization of the A* algorithm designed for open spaces. Its secret is "teleportation": instead of checking every cell, it shoots directional rays to jump large distances and only stop at critical "turning points" (obstacle corners).\\n\\nThis technique allows it to completely ignore corridors and empty areas, drastically reducing the number of nodes in the waiting list. It is, without a doubt, the fastest algorithm for moving agents on large, clear maps without losing the shortest-path guarantee.',
   characteristics: [
-    'Garantiza descifrar el camino unívoco de magnitud más corto al igual que A*.',
-    'Súper eficiente, drámatico y ultra veloz en espacios y páramos extremadamente abiertos al saltar enormes distancias del plano de golpe.',
-    'Permite de forma natural e implementada el libre movimiento en las 8 direcciones cardinales.'
+    'Much faster than A* in maps with large open areas.',
+    'Jumps over irrelevant cells searching only for inflection points.',
+    'Guarantees the shortest path by optimizing asymmetrical exploration.'
   ],
   applications: [
-    'Videojuegos multimasivos (MMO o tácticos RPGs) que requieren simular miles de agentes moviéndose a la vez en tiempo real de forma masiva.',
-    'Robótica automatizada portuaria de estibación y navegación rápida autónoma con drones en inmensas explanadas y pabellones de almacenes.'
+    'Real-time strategy (RTS) games with giant maps.',
+    'Drone navigation in large warehouses or outdoor spaces.',
+    'Crowd simulation in clear urban environments.'
   ],
-  pseudocode: `Abiertos = [Inicio]
-Mientras Abiertos no esté vacío:
-  Actual = Sacar de Abiertos
-  Si Actual == Fin: Retornar Camino
-  Para cada Vecino de Actual:
-    PuntoDeSalto = Saltar(Actual, Dirección)
-    Si PuntoDeSalto existe:
-      Añadir PuntoDeSalto a Abiertos`,
+  pseudocode: `Open = [Start]
+While Open is not empty:
+  Current = Pop node with lowest F from Open
+  If Current == End: Return Path
+  For each Direction:
+    JumpPoint = Jump(Current, Direction)
+    If JumpPoint exists:
+      Add JumpPoint to Open`,
   pseudocodeLegend: {
-    'Abiertos': 'Cola de prioridad idéntica punto a punto a la usada en su predecesor A*, pero que tan solo alberga en su celoso interior los limitados y exclusivos recovecos calificados como dignos Puntos de Salto de todo el largo plano.',
-    'PuntoDeSalto': 'Una coordenada, rincón o esquina obligatoria (normalmente rodeando muros caprichosos) el cual sí es digno y vale la estricta pena recelar estructuralmente de él y registrar y retener en la limitada memoria ram del cliente para luego calcular giros matemáticos precisos sobre su contorno y lomo.',
-    'Saltar': 'La ágil agresiva técnica de otear o sondear disparando un láser matemático recto que filtra o salta el vacio omitiendo rápidamente iteraciones de sucias celdillas libres de escombros de la inmensidad topográfica, ahorrando miles de preciosos ociosos ciclos de cómputo inyectados a la CPU durante el simulacro.',
-    'Camino': 'Línea de ruta que une finalmente con escuadra y cartabón la pequeña ristra ínfima de vértices escuetos recopilados, obteniendo de chiripa implícita los pasos lineales exactos por descarte geográfico del medio recorrido sin tener que calcular todos los baldosines a lo loco y bestia uno a uno como sus rústicos y arcaicos ancestros desfasados computacionales obligan.'
+    'Jump Point': 'A strategic node where the path must necessarily change direction.',
+    'Jump': 'The action of scanning in a straight line until a wall or a point of interest is found.',
+    'Efficiency': 'JPS stands out by reducing the number of visited nodes by an order of magnitude.'
   },
   isImplemented: true
 };
+
+// Priority Queue simple para JPS (Min-Heap)
+class PriorityQueue<T> {
+  private heap: T[] = [];
+  private comparator: (a: T, b: T) => number;
+  constructor(comparator: (a: T, b: T) => number) {
+    this.comparator = comparator;
+  }
+
+  push(item: T) {
+    this.heap.push(item);
+    this.siftUp();
+  }
+
+  pop(): T | undefined {
+    if (this.size() === 0) return undefined;
+    const top = this.heap[0];
+    const last = this.heap.pop()!;
+    if (this.size() > 0) {
+      this.heap[0] = last;
+      this.siftDown();
+    }
+    return top;
+  }
+
+  size() {
+    return this.heap.length;
+  }
+
+  private siftUp() {
+    let nodeIdx = this.heap.length - 1;
+    while (nodeIdx > 0) {
+      const parentIdx = (nodeIdx - 1) >>> 1;
+      if (this.comparator(this.heap[nodeIdx], this.heap[parentIdx]) < 0) {
+        [this.heap[nodeIdx], this.heap[parentIdx]] = [this.heap[parentIdx], this.heap[nodeIdx]];
+        nodeIdx = parentIdx;
+      } else break;
+    }
+  }
+
+  private siftDown() {
+    let nodeIdx = 0;
+    while (true) {
+      let smallestIdx = nodeIdx;
+      const leftChildIdx = (nodeIdx << 1) + 1;
+      const rightChildIdx = (nodeIdx << 1) + 2;
+
+      if (leftChildIdx < this.heap.length && this.comparator(this.heap[leftChildIdx], this.heap[smallestIdx]) < 0) {
+        smallestIdx = leftChildIdx;
+      }
+      if (rightChildIdx < this.heap.length && this.comparator(this.heap[rightChildIdx], this.heap[smallestIdx]) < 0) {
+        smallestIdx = rightChildIdx;
+      }
+
+      if (smallestIdx !== nodeIdx) {
+        [this.heap[nodeIdx], this.heap[smallestIdx]] = [this.heap[smallestIdx], this.heap[nodeIdx]];
+        nodeIdx = smallestIdx;
+      } else break;
+    }
+  }
+}
 
 export function* jps(
   grid: boolean[][],
@@ -41,160 +102,167 @@ export function* jps(
   const isWalkable = (x: number, y: number) =>
     x >= 0 && x < cols && y >= 0 && y < rows && !grid[y][x];
 
+  // Distancia Octile para heurística
   const h = (x: number, y: number) => {
     const dx = Math.abs(x - end.x);
     const dy = Math.abs(y - end.y);
-    return dx + dy + (Math.sqrt(2) - 2) * Math.min(dx, dy);
+    const D = 1;
+    const D2 = Math.sqrt(2);
+    const p = 1 / (rows * cols);
+    return (D * (dx + dy) + (D2 - 2 * D) * Math.min(dx, dy)) * (1 + p);
   };
 
   const gScore = new Map<string, number>();
   const parentMap = new Map<string, { x: number, y: number } | null>();
-  type JPSNode = { x: number, y: number, f: number, g: number };
-  const openSet: JPSNode[] = [];
   const closedSet = new Set<string>();
+
+  type JPSNode = { x: number, y: number, f: number, g: number };
+  const openSet = new PriorityQueue<JPSNode>((a, b) => {
+    if (a.f !== b.f) return a.f - b.f;
+    return h(a.x, a.y) - h(b.x, b.y);
+  });
 
   gScore.set(`${start.x},${start.y}`, 0);
   parentMap.set(`${start.x},${start.y}`, null);
   openSet.push({ x: start.x, y: start.y, f: h(start.x, start.y), g: 0 });
+
   yield { ...start, type: 'visited' };
 
-  // Diagonal move from (cx,cy) to (cx+dx,cy+dy) is legal only if
-  // both cardinal intermediaries are free (strict no-corner-cutting).
-  const canMoveDiag = (cx: number, cy: number, dx: number, dy: number) =>
-    isWalkable(cx + dx, cy) && isWalkable(cx, cy + dy);
-
   function jump(cx: number, cy: number, dx: number, dy: number): { x: number, y: number } | null {
-    const nx = cx + dx;
-    const ny = cy + dy;
+    let nx = cx + dx;
+    let ny = cy + dy;
 
     if (!isWalkable(nx, ny)) return null;
 
-    // No-corner-cutting: block diagonal moves through walls
-    if (dx !== 0 && dy !== 0 && !canMoveDiag(cx, cy, dx, dy)) return null;
+    // Strict No-Corner-Cutting: block diagonal moves through walls
+    if (dx !== 0 && dy !== 0) {
+      if (!isWalkable(cx + dx, cy) && !isWalkable(cx, cy + dy)) return null;
+    }
 
     if (nx === end.x && ny === end.y) return { x: nx, y: ny };
 
+    // Check forced neighbors
     if (dx !== 0 && dy !== 0) {
-      // Diagonal: jump point if a cardinal sub-jump identifies one
-      if (jump(nx, ny, dx, 0) !== null || jump(nx, ny, 0, dy) !== null) return { x: nx, y: ny };
+      // Diagonal
+      if ((isWalkable(nx - dx, ny + dy) && !isWalkable(nx - dx, ny)) ||
+        (isWalkable(nx + dx, ny - dy) && !isWalkable(nx, ny - dy))) {
+        return { x: nx, y: ny };
+      }
+      // Recursive cardinal jumps
+      if (jump(nx, ny, dx, 0) !== null || jump(nx, ny, 0, dy) !== null) {
+        return { x: nx, y: ny };
+      }
     } else if (dx !== 0) {
-      // Horizontal: forced neighbor if wall just behind in perp direction, now open
-      // (wall at cx in perp direction, clear at nx in perp direction)
-      if ((!isWalkable(cx, ny + 1) && isWalkable(nx, ny + 1)) ||
-          (!isWalkable(cx, ny - 1) && isWalkable(nx, ny - 1))) return { x: nx, y: ny };
+      // Horizontal
+      if ((isWalkable(nx + dx, ny + 1) && !isWalkable(nx, ny + 1)) ||
+        (isWalkable(nx + dx, ny - 1) && !isWalkable(nx, ny - 1))) {
+        return { x: nx, y: ny };
+      }
     } else {
-      // Vertical: forced neighbor if wall just behind in perp direction, now open
-      if ((!isWalkable(nx + 1, cy) && isWalkable(nx + 1, ny)) ||
-          (!isWalkable(nx - 1, cy) && isWalkable(nx - 1, ny))) return { x: nx, y: ny };
+      // Vertical
+      if ((isWalkable(nx + 1, ny + dy) && !isWalkable(nx + 1, ny)) ||
+        (isWalkable(nx - 1, ny + dy) && !isWalkable(nx - 1, ny))) {
+        return { x: nx, y: ny };
+      }
     }
 
     return jump(nx, ny, dx, dy);
   }
 
-  function getNeighbors(node: JPSNode): { dx: number, dy: number }[] {
-    const dirs: { dx: number, dy: number }[] = [];
-    const par = parentMap.get(`${node.x},${node.y}`);
-    const x = node.x, y = node.y;
-
-    if (!par) {
-      // Start node: all 8 directions (respecting no-corner-cutting)
-      for (let ddx = -1; ddx <= 1; ddx++) {
-        for (let ddy = -1; ddy <= 1; ddy++) {
-          if (ddx === 0 && ddy === 0) continue;
-          if (!isWalkable(x + ddx, y + ddy)) continue;
-          if (ddx !== 0 && ddy !== 0 && !canMoveDiag(x, y, ddx, ddy)) continue;
-          dirs.push({ dx: ddx, dy: ddy });
-        }
-      }
-      return dirs;
+  function getNeighborDirections(node: JPSNode): { dx: number, dy: number }[] {
+    const parent = parentMap.get(`${node.x},${node.y}`);
+    if (!parent) {
+      // Start node: all 8 directions
+      return [
+        { dx: 1, dy: 0 }, { dx: -1, dy: 0 }, { dx: 0, dy: 1 }, { dx: 0, dy: -1 },
+        { dx: 1, dy: 1 }, { dx: 1, dy: -1 }, { dx: -1, dy: 1 }, { dx: -1, dy: -1 }
+      ];
     }
 
-    const dx = Math.sign(x - par.x);
-    const dy = Math.sign(y - par.y);
+    const dx = Math.sign(node.x - parent.x);
+    const dy = Math.sign(node.y - parent.y);
+    const dirs: { dx: number, dy: number }[] = [];
 
     if (dx !== 0 && dy !== 0) {
-      // Arrived diagonally: natural neighbors
-      const canH = isWalkable(x + dx, y);
-      const canV = isWalkable(x, y + dy);
-      if (canH) dirs.push({ dx, dy: 0 });
-      if (canV) dirs.push({ dx: 0, dy });
-      if (canH && canV && isWalkable(x + dx, y + dy)) dirs.push({ dx, dy });
-
+      // Diagonal
+      if (isWalkable(node.x + dx, node.y)) dirs.push({ dx, dy: 0 });
+      if (isWalkable(node.x, node.y + dy)) dirs.push({ dx: 0, dy });
+      if (isWalkable(node.x + dx, node.y + dy)) {
+        // Natural diagonal only if no strict corner cut
+        if (isWalkable(node.x + dx, node.y) || isWalkable(node.x, node.y + dy)) {
+          dirs.push({ dx, dy });
+        }
+      }
+      // Forced neighbors
+      if (!isWalkable(node.x - dx, node.y) && isWalkable(node.x - dx, node.y + dy)) dirs.push({ dx: -dx, dy });
+      if (!isWalkable(node.x, node.y - dy) && isWalkable(node.x + dx, node.y - dy)) dirs.push({ dx, dy: -dy });
     } else if (dx !== 0) {
-      // Arrived horizontally
-      if (isWalkable(x + dx, y)) dirs.push({ dx, dy: 0 });
-
-      // Forced neighbor: wall was behind in perpendicular direction, now open
-      if (!isWalkable(x - dx, y + 1) && isWalkable(x, y + 1)) {
-        dirs.push({ dx: 0, dy: 1 }); // cardinal turn
-        // Also add diagonal if the path is legal (no corner cut)
-        if (isWalkable(x + dx, y)) dirs.push({ dx, dy: 1 });
+      // Horizontal
+      if (isWalkable(node.x + dx, node.y)) {
+        dirs.push({ dx, dy: 0 });
+        if (!isWalkable(node.x, node.y + 1) && isWalkable(node.x + dx, node.y + 1)) dirs.push({ dx, dy: 1 });
+        if (!isWalkable(node.x, node.y - 1) && isWalkable(node.x + dx, node.y - 1)) dirs.push({ dx, dy: -1 });
       }
-      if (!isWalkable(x - dx, y - 1) && isWalkable(x, y - 1)) {
-        dirs.push({ dx: 0, dy: -1 });
-        if (isWalkable(x + dx, y)) dirs.push({ dx, dy: -1 });
-      }
-
     } else {
-      // Arrived vertically
-      if (isWalkable(x, y + dy)) dirs.push({ dx: 0, dy });
-
-      if (!isWalkable(x + 1, y - dy) && isWalkable(x + 1, y)) {
-        dirs.push({ dx: 1, dy: 0 });
-        if (isWalkable(x, y + dy)) dirs.push({ dx: 1, dy });
-      }
-      if (!isWalkable(x - 1, y - dy) && isWalkable(x - 1, y)) {
-        dirs.push({ dx: -1, dy: 0 });
-        if (isWalkable(x, y + dy)) dirs.push({ dx: -1, dy });
+      // Vertical
+      if (isWalkable(node.x, node.y + dy)) {
+        dirs.push({ dx: 0, dy });
+        if (!isWalkable(node.x + 1, node.y) && isWalkable(node.x + 1, node.y + dy)) dirs.push({ dx: 1, dy });
+        if (!isWalkable(node.x - 1, node.y) && isWalkable(node.x - 1, node.y + dy)) dirs.push({ dx: -1, dy });
       }
     }
-
     return dirs;
   }
 
-  while (openSet.length > 0) {
-    openSet.sort((a, b) => a.f !== b.f ? a.f - b.f : h(a.x, a.y) - h(b.x, b.y));
-    const current = openSet.shift()!;
+  while (openSet.size() > 0) {
+    const current = openSet.pop()!;
     const curKey = `${current.x},${current.y}`;
+
     if (closedSet.has(curKey)) continue;
     closedSet.add(curKey);
+
     yield { x: current.x, y: current.y, type: 'visited' };
 
     if (current.x === end.x && current.y === end.y) {
       const path: Step[] = [];
       let temp: { x: number, y: number } | null = current;
       while (temp) {
-        const p = parentMap.get(`${temp.x},${temp.y}`);
-        if (p) {
-          const pdx = Math.sign(temp.x - p.x);
-          const pdy = Math.sign(temp.y - p.y);
-          let ix = temp.x, iy = temp.y;
-          while (ix !== p.x || iy !== p.y) {
+        const parent = parentMap.get(`${temp.x},${temp.y}`);
+        if (parent) {
+          const dx = Math.sign(temp.x - parent.x);
+          const dy = Math.sign(temp.y - parent.y);
+          let ix = temp.x;
+          let iy = temp.y;
+          while (ix !== parent.x || iy !== parent.y) {
             path.push({ x: ix, y: iy, type: 'path' });
-            ix -= pdx; iy -= pdy;
+            ix -= dx;
+            iy -= dy;
           }
         } else {
           path.push({ x: temp.x, y: temp.y, type: 'path' });
         }
-        temp = p ?? null;
+        temp = parent ?? null;
       }
       path.reverse();
       for (const step of path) yield step;
       return;
     }
 
-    for (const dir of getNeighbors(current)) {
-      const jp = jump(current.x, current.y, dir.dx, dir.dy);
-      if (!jp) continue;
-      const jKey = `${jp.x},${jp.y}`;
-      if (closedSet.has(jKey)) continue;
-      const d = Math.hypot(jp.x - current.x, jp.y - current.y);
-      const newG = current.g + d;
-      if (newG < (gScore.get(jKey) ?? Infinity)) {
-        gScore.set(jKey, newG);
-        parentMap.set(jKey, { x: current.x, y: current.y });
-        openSet.push({ x: jp.x, y: jp.y, g: newG, f: newG + h(jp.x, jp.y) });
-        yield { x: jp.x, y: jp.y, type: 'visited' };
+    for (const d of getNeighborDirections(current)) {
+      const jp = jump(current.x, current.y, d.dx, d.dy);
+      if (jp) {
+        const jKey = `${jp.x},${jp.y}`;
+        if (closedSet.has(jKey)) continue;
+
+        const dist = Math.hypot(jp.x - current.x, jp.y - current.y);
+        const tentativeG = current.g + dist;
+
+        if (tentativeG < (gScore.get(jKey) ?? Infinity)) {
+          gScore.set(jKey, tentativeG);
+          parentMap.set(jKey, { x: current.x, y: current.y });
+          openSet.push({ x: jp.x, y: jp.y, g: tentativeG, f: tentativeG + h(jp.x, jp.y) });
+          // Note: we don't yield 'visited' here because we want to show the expansion one jump point at a time
+        }
       }
     }
   }

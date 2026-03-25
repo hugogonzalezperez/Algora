@@ -3,35 +3,96 @@ import type { Step } from './index';
 export const astarMetadata = {
   id: 'astar',
   name: 'A* Algorithm',
-  description: 'A* (A-Star) es indiscutiblemente uno de los algoritmos de pathfinding más admirados y utilizados de la historia de la informática por su extremada eficiencia práctica en el campo de batalla y su absoluta precisión. Combina la meticulosidad garantista ineludible del algoritmo de Dijkstra, con la rapidez y la dirección intuitiva e inteligente del método empírico "Greedy Best-First-Search".\n\nEl secreto del éxito rotundo del A-Star reside esencialmente en que la expansión de su búsqueda no es ciega y estúpida como un vulgar BFS, sino que pesa rigurosamente cada decisión matemática y paso en base a una Heurística (una ecuación matemática superior que le otorga lo que podríamos considerar llanamente "una premonición certera" sobre en qué dirección puramente lógica intuye que le convendría avanzar más si desea llegar lo más rápido posible previendo el destino final). En este simulador, emplea la implacable distancia de Octile (8 ramificaciones) para apuntar milimétricamente como un francotirador al nodo final, esquivando y sorteando paredes de forma orgánica, cortando los cuellos de botella y ahorrando a la CPU y RAM precioso tiempo valioso de recorrido computacional.',
+  description: 'A* is the crown jewel of pathfinding. Its genius lies in its perfect fusion: it combines the mathematical robustness of Dijkstra with the intelligent intuition of a Heuristic.\\n\\nUnlike other algorithms, A* does not walk blindly; it has a "compass" that tells it at each step how far it theoretically is from the goal. This allows it to ignore irrelevant paths and shoot like a bullet toward the objective, always guaranteeing the most efficient route with the least computational effort.',
   characteristics: [
-    'Garantiza sin paliativos el desentrañar matemáticamente camino unívoco más corto.',
-    'Usa heurísticas ponderadas avanzadas (distancia Octile precalculada internamente).',
-    'Permite de serie movimiento diagonal (8 direcciones).'
+    'The most efficient algorithm for finding the shortest path.',
+    'Uses Heuristics (Octile distance) to guide the search toward the goal.',
+    'Supports diagonal movement with an optimal balance between speed and precision.'
   ],
   applications: [
-    'Títulos triple A de la industria del viedojuego y motores base de Inteligencia Artificial para NPCs.',
-    'Ruteado en mapas topográficos geolocalizados de GPS y automatización industrial robótica celular.'
+    'Video game engines for character movement (AI).',
+    'High-performance mapping and GPS systems.',
+    'Path planning for autonomous robots and drones.'
   ],
-  pseudocode: `Abiertos = [Inicio], G[Inicio] = 0, F[Inicio] = H(Inicio)
-Mientras Abiertos no esté vacío:
-  Actual = Nodo en Abiertos con menor F
-  Si Actual == Fin: Retornar Camino
-  Para cada Vecino de Actual:
-    nuevo_G = G[Actual] + Distancia(Actual, Vecino)
-    Si nuevo_G < G[Vecino]:
-      G[Vecino] = nuevo_G
-      F[Vecino] = nuevo_G + H(Vecino)
-      Añadir Vecino a Abiertos`,
+  pseudocode: `Open = [Start], G[Start] = 0, F[Start] = H(Start)
+While Open is not empty:
+  Current = Node in Open with lowest F (G + H)
+  If Current == End: Return Path
+  For each Neighbor of Current:
+    new_G = G[Current] + Weight(Current, Neighbor)
+    If new_G < G[Neighbor]:
+      G[Neighbor] = new_G
+      F[Neighbor] = new_G + H(Neighbor)
+      Add Neighbor to Open (Min-Heap)`,
   pseudocodeLegend: {
-    'Abiertos': 'Lista táctica priorizada de nodos descubiertos pululando a la incesante espera de que les llegue su inexorable turno de ser explorados del todo. Están ordenados en perpetuo tiempo real rigiéndose al milímetro según su sumatorio de peso F a fin de que el próximo canditato a arrancar sea matemática y lógicamente siempre el que ostente mayor conveniencia y probabilidad de acierto.',
-    'G': 'Costo riguroso y matemático, sin magia artificial alguna. Es lisa y llanamente la distancia verídica inalterable acumulada trágicamente desde las coordenadas de inicio vital hasta un miserable nodo en específico tras cada travesía del arduo sendero.',
-    'H': '(Heurística) Costo astuto y extremadamente audaz de una suposición magistralmente calculada de lo que teóricamente falta o dista en la cruda lejanía desde un nodo disparado rectamente como un dardo cruzando tabiques de aire hasta topar virtualmente con la Meta sin contemplar obstáculo indeseado alguno mediante una ecuación euclidiana o de Octile preconfigurada al milímetro.',
-    'F': 'El grado general absolutista del valor de prioridad inalienable de ahondar exhaustivamente en un nodo y su casta (F = G + H repesentando en un número toda tu fiabilidad de ser explotable o ignorado flagrantemente). A menor número natural, el algoritmo A-Star caerá de pleno seducido irremediablemente a la "tentación pasional" de sumergirse abnegado adentrándose para desmembrarlo de forma minuciosa en las siguientes vueltas o bucles de su bucle general en solitario con susurros logarítmicos del averno.',
-    'Vecino': 'Ramas colindantes periféricas las cuales logran otearse y ser descubiertas desde una atalaya inusitada. Contempla el movimiento oblicuo tridimensional en diagonal sin dejarse engañar perversamente colisionando o atreviéndose a surcar y atravesar quimeras de esquinas obtusas prohibidas e insalvables.'
+    'G': 'The actual cost accumulated from the start to the node.',
+    'H': 'Heuristic: A smart estimate of the remaining distance to the goal.',
+    'F': 'Total priority (G + H). A* always chooses the node with the lowest F value.',
+    'Octile Distance': 'Mathematical equation that allows natural movement in 8 directions.'
   },
   isImplemented: true
 };
+
+// Priority Queue simple para A* (Min-Heap)
+class PriorityQueue<T> {
+  private heap: T[] = [];
+  private comparator: (a: T, b: T) => number;
+  constructor(comparator: (a: T, b: T) => number) {
+    this.comparator = comparator;
+  }
+
+  push(item: T) {
+    this.heap.push(item);
+    this.siftUp();
+  }
+
+  pop(): T | undefined {
+    if (this.size() === 0) return undefined;
+    const top = this.heap[0];
+    const last = this.heap.pop()!;
+    if (this.size() > 0) {
+      this.heap[0] = last;
+      this.siftDown();
+    }
+    return top;
+  }
+
+  size() {
+    return this.heap.length;
+  }
+
+  private siftUp() {
+    let nodeIdx = this.heap.length - 1;
+    while (nodeIdx > 0) {
+      const parentIdx = (nodeIdx - 1) >>> 1;
+      if (this.comparator(this.heap[nodeIdx], this.heap[parentIdx]) < 0) {
+        [this.heap[nodeIdx], this.heap[parentIdx]] = [this.heap[parentIdx], this.heap[nodeIdx]];
+        nodeIdx = parentIdx;
+      } else break;
+    }
+  }
+
+  private siftDown() {
+    let nodeIdx = 0;
+    while (true) {
+      let smallestIdx = nodeIdx;
+      const leftChildIdx = (nodeIdx << 1) + 1;
+      const rightChildIdx = (nodeIdx << 1) + 2;
+
+      if (leftChildIdx < this.heap.length && this.comparator(this.heap[leftChildIdx], this.heap[smallestIdx]) < 0) {
+        smallestIdx = leftChildIdx;
+      }
+      if (rightChildIdx < this.heap.length && this.comparator(this.heap[rightChildIdx], this.heap[smallestIdx]) < 0) {
+        smallestIdx = rightChildIdx;
+      }
+
+      if (smallestIdx !== nodeIdx) {
+        [this.heap[nodeIdx], this.heap[smallestIdx]] = [this.heap[smallestIdx], this.heap[nodeIdx]];
+        nodeIdx = smallestIdx;
+      } else break;
+    }
+  }
+}
 
 export function* astar(
   grid: boolean[][],
@@ -65,18 +126,17 @@ export function* astar(
   const closedSet = new Set<string>();
 
   type OpenNode = { f: number; g: number; x: number; y: number };
-  const openSet: OpenNode[] = [{ f: h(start.x, start.y), g: 0, x: start.x, y: start.y }];
+  const openSet = new PriorityQueue<OpenNode>((a, b) => {
+    if (a.f !== b.f) return a.f - b.f;
+    return h(a.x, a.y) - h(b.x, b.y);
+  });
+
+  openSet.push({ f: h(start.x, start.y), g: 0, x: start.x, y: start.y });
 
   yield { ...start, type: 'visited' };
 
-  while (openSet.length > 0) {
-    // Ordenar por f; en empate, priorizamos el que tenga menor h (más cerca del final)
-    openSet.sort((a, b) => {
-      if (a.f !== b.f) return a.f - b.f;
-      return h(a.x, a.y) - h(b.x, b.y);
-    });
-
-    const current = openSet.shift()!;
+  while (openSet.size() > 0) {
+    const current = openSet.pop()!;
     const { x: cx, y: cy } = current;
     const curKey = `${cx},${cy}`;
 
@@ -119,10 +179,13 @@ export function* astar(
 
       if (!isWalkable(nx, ny)) continue;
 
-      // REGLA ESTRICTA DE ESQUINAS: No permitir movimiento diagonal si hay un muro adyacente
+      // REGLA DE ESQUINAS RELAJADA: Solo prohibir diagonal si AMBOS vecinos cardinales son muros
       if (dx !== 0 && dy !== 0) {
-        // Los dos vecinos cardinales que forman la esquina deben estar libres
-        if (!isWalkable(nx, cy) || !isWalkable(cx, ny)) continue;
+        // Los dos vecinos cardinales que forman la esquina
+        const cardinal1 = isWalkable(nx, cy);
+        const cardinal2 = isWalkable(cx, ny);
+        // Si AMBOS están bloqueados, es un cuello de botella insalvable por diagonal
+        if (!cardinal1 && !cardinal2) continue;
       }
 
       const nKey = `${nx},${ny}`;
