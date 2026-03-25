@@ -4,6 +4,8 @@ import { PathfindingToolbar } from '../components/PathfindingToolbar';
 import { AlgorithmInfo } from '../components/AlgorithmInfo';
 import { PATHFINDING_ALGORITHMS } from '../algorithms/pathfinding/solvers';
 import { MAZE_ALGORITHMS } from '../algorithms/pathfinding/maze';
+import { Modal } from '../components/ui/Modal';
+import { Alert } from '../components/ui/Alert';
 
 const TARGET_CELL_SIZE = 25;
 
@@ -11,6 +13,11 @@ export const PathfindingPage = () => {
   const [gridSize, setGridSize] = useState({ rows: 0, cols: 0, cellSize: { x: TARGET_CELL_SIZE, y: TARGET_CELL_SIZE } });
   const [startNode, setStartNode] = useState({ x: 0, y: 0 });
   const [endNode, setEndNode] = useState({ x: 0, y: 0 });
+  const [resultAlert, setResultAlert] = useState<{ 
+    variant: 'info' | 'error' | 'success'; 
+    title: string; 
+    description: string; 
+  } | null>(null);
 
   const [isRunning, setIsRunning] = useState(false);
   const [speed, setSpeed] = useState(10); // Delay en ms (x1)
@@ -145,7 +152,11 @@ export const PathfindingPage = () => {
     if (isRunning || !gridSize.rows || !gridSize.cols) return;
 
     if (selectedPathAlgo === 'none') {
-      alert("A pathfinding algorithm must be selected before starting.");
+      setResultAlert({
+        variant: 'warning',
+        title: 'ALGORITHM REQUIRED',
+        description: 'Please select a pathfinding algorithm in the toolbar before starting the execution.',
+      });
       return;
     }
 
@@ -155,13 +166,15 @@ export const PathfindingPage = () => {
     setIsRunning(true);
     stopRequested.current = false;
     clearPath();
+    const startTime = performance.now();
+    let pathFound = false;
+    let pathLength = 0;
 
     const currentGrid: boolean[][] = Array.from({ length: gridSize.rows }, (_, y) =>
       Array.from({ length: gridSize.cols }, (_, x) => {
         const node = document.getElementById(`node-${x}-${y}`);
         if (!node) return false;
         const fill = node.getAttribute('fill');
-        // Un muro es cualquier cosa que no sea transparente o vacío
         return fill !== 'transparent' && fill !== 'none' && fill !== '';
       })
     );
@@ -178,6 +191,10 @@ export const PathfindingPage = () => {
       if (stopRequested.current) break;
 
       const { x, y, type } = step;
+      if (type === 'path') {
+        pathFound = true;
+        pathLength++;
+      }
 
       const node = document.getElementById(`node-${x}-${y}`);
       if (node && node.getAttribute('fill') !== '#1a1a1a') {
@@ -210,11 +227,27 @@ export const PathfindingPage = () => {
           }
 
         } else {
-          node.setAttribute('fill', '#9c9c9cff'); // Gris claro para visitados (elegido por user)
+          node.setAttribute('fill', '#9c9c9cff');
         }
         node.style.transitionDelay = '0ms';
       }
       await new Promise(resolve => setTimeout(resolve, speed));
+    }
+
+    const duration = ((performance.now() - startTime) / 1000).toFixed(2);
+    
+    if (pathFound) {
+      setResultAlert({
+        variant: 'success',
+        title: 'PATH FOUND',
+        description: `Minimum Distance: ${pathLength} nodes • Time: ${duration}s`,
+      });
+    } else if (!stopRequested.current) {
+      setResultAlert({
+        variant: 'error',
+        title: 'NO SOLUTION',
+        description: 'No valid path exists between start and end nodes.',
+      });
     }
 
     setIsRunning(false);
@@ -240,7 +273,11 @@ export const PathfindingPage = () => {
   const generateMaze = async () => {
     if (isRunning) return;
     if (selectedMazeAlgo === 'none') {
-      alert("A maze generation algorithm must be selected before starting.");
+      setResultAlert({
+        variant: 'warning',
+        title: 'ALGORITHM REQUIRED',
+        description: 'Please select a maze generation algorithm in the toolbar before starting the generation.',
+      });
       resetGrid();
       return;
     }
@@ -264,7 +301,11 @@ export const PathfindingPage = () => {
 
     const algo = MAZE_ALGORITHMS[selectedMazeAlgo];
     if (!algo || !algo.isImplemented) {
-      alert("This maze algorithm is not implemented yet.");
+      setResultAlert({
+        variant: 'error',
+        title: 'NOT IMPLEMENTED',
+        description: 'This maze algorithm is currently under development.',
+      });
       setIsRunning(false);
       return;
     }
@@ -376,6 +417,17 @@ export const PathfindingPage = () => {
           </div>
         </div>
       </section>
+
+      <Modal isOpen={!!resultAlert} onClose={() => setResultAlert(null)}>
+        {resultAlert && (
+          <Alert 
+            variant={resultAlert.variant}
+            title={resultAlert.title}
+            description={resultAlert.description}
+            onClose={() => setResultAlert(null)}
+          />
+        )}
+      </Modal>
     </div>
   );
 };

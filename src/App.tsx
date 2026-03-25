@@ -17,17 +17,17 @@ export default function App() {
           <div className="flex gap-6 text-sm font-bold">
             <button
               onClick={() => setCurrentPage(PAGES.PATH)}
-              className={`relative py-1 ${currentPage === PAGES.PATH ? 'opacity-100' : 'opacity-40'} hover:opacity-100 transition-all uppercase group`}
+              className={`relative py-1 border-0 ${currentPage === PAGES.PATH ? 'opacity-100' : 'opacity-40'} hover:opacity-100 transition-all uppercase group bg-transparent cursor-pointer`}
             >
               Pathfinding
-              <div className={`absolute -bottom-1 left-0 w-full h-[2px] bg-carbon transition-all duration-300 origin-left ${currentPage === PAGES.PATH ? 'scale-x-100 opacity-100' : 'scale-x-0 group-hover:scale-x-100 opacity-30'}`} />
+              <div className={`absolute -bottom-1 left-0 w-full h-[2px] bg-carbon transition-all duration-300 origin-left ${currentPage === PAGES.PATH ? 'scale-x-100 opacity-100' : 'scale-x-0 group-hover:scale-x-100 opacity-100'}`} />
             </button>
             <button
               onClick={() => setCurrentPage(PAGES.SORT)}
-              className={`relative py-1 ${currentPage === PAGES.SORT ? 'opacity-100' : 'opacity-40'} hover:opacity-100 transition-all uppercase group`}
+              className={`relative py-1 border-0 ${currentPage === PAGES.SORT ? 'opacity-100' : 'opacity-40'} hover:opacity-100 transition-all uppercase group bg-transparent cursor-pointer`}
             >
               Sorting
-              <div className={`absolute -bottom-1 left-0 w-full h-[2px] bg-carbon transition-all duration-300 origin-left ${currentPage === PAGES.SORT ? 'scale-x-100 opacity-100' : 'scale-x-0 group-hover:scale-x-100 opacity-30'}`} />
+              <div className={`absolute -bottom-1 left-0 w-full h-[2px] bg-carbon transition-all duration-300 origin-left ${currentPage === PAGES.SORT ? 'scale-x-100 opacity-100' : 'scale-x-0 group-hover:scale-x-100 opacity-100'}`} />
             </button>
           </div>
         </div>
