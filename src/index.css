@@ -5,6 +5,7 @@
   --color-carbon: #1B1C1A;
   --color-sepia: #F1EFEA;
   --color-accent: #3b82f6;
+  --color-error: #ef4444;
   --font-mono: ui-monospace, Consolas, monospace;
   --font-headline: 'Space Grotesk', sans-serif;
 }
@@ -165,7 +166,7 @@ body {
   }
 
   .alert-error {
-    @apply border-error bg-crema text-error;
+    @apply border-carbon bg-crema text-carbon;
   }
 
   .alert-success {
@@ -173,7 +174,7 @@ body {
   }
 
   .alert-title {
-    @apply font-bold text-sm lg:text-base uppercase tracking-wider mb-1 block;
+    @apply font-bold text-sm lg:text-base uppercase tracking-wider mb-2 block;
   }
 
   .alert-description {

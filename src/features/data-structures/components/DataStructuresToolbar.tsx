@@ -78,13 +78,13 @@ export const DataStructuresToolbar = ({
             onClick={handlePush}
             className="btn-primary"
           >
-            Push
+            {selectedStructure === 'QUEUE' ? 'Enqueue' : 'Push'}
           </button>
           <button 
             onClick={onPop}
             className="btn-primary"
           >
-            Pop
+            {selectedStructure === 'QUEUE' ? 'Dequeue' : 'Pop'}
           </button>
           <button 
             onClick={onPeek}

@@ -1,55 +1,111 @@
+import { memo, useState, useEffect } from 'react';
+import type { StackItem } from '../hooks/useStack';
+
 interface StackVisualizerProps {
-  stack: string[];
+  stack: StackItem[];
   peekedIndex: number | null;
   maxSize: number;
 }
 
-export const StackVisualizer = ({ stack, peekedIndex, maxSize }: StackVisualizerProps) => {
+const StackElement = memo(({ 
+  value, 
+  idx, 
+  elementHeight, 
+  gap, 
+  isPeeked, 
+  containerHeight 
+}: { 
+  value: string; 
+  idx: number; 
+  elementHeight: number; 
+  gap: number; 
+  isPeeked: boolean; 
+  containerHeight: number;
+}) => {
+  const [isRendered, setIsRendered] = useState(false);
+
+  useEffect(() => {
+    // Initial mount starting from top
+    const raf = requestAnimationFrame(() => {
+      setIsRendered(true);
+    });
+    return () => cancelAnimationFrame(raf);
+  }, []);
+
+  const targetBottom = idx * (elementHeight + gap) + 4;
+  const entryBottom = containerHeight;
+
+  return (
+    <div 
+      className={`absolute w-[calc(100%-8px)] border-2 border-carbon flex items-center justify-center font-mono text-[17px] font-bold transition-all duration-500 ease-in-out
+        ${isPeeked ? 'bg-carbon text-crema scale-105 shadow-lg z-10 shadow-carbon/20' : 'bg-crema text-carbon'}`}
+      style={{ 
+          height: `${elementHeight}px`,
+          bottom: `${isRendered ? targetBottom : entryBottom}px`,
+          left: '4px'
+      }}
+    >
+      {value}
+    </div>
+  );
+});
+
+StackElement.displayName = 'StackElement';
+
+export const StackVisualizer = memo(({ stack, peekedIndex, maxSize }: StackVisualizerProps) => {
   const CONTAINER_HEIGHT = 460;
   const GAP = 4;
-  const PADDING = 8; // p-1 on both sides = 4 * 2? No, p-1 is 4px.
+  const PADDING = 8;
   
-  // Calculate dynamic height for elements to fit the static container
   const elementHeight = (CONTAINER_HEIGHT - PADDING - (maxSize - 1) * GAP) / maxSize;
 
-  // Memory addresses for the horizontal mapping
-  const memoryStrip = Array.from({ length: maxSize }, (_, i) => ({
-    addr: `0x${(i * 4).toString(16).toUpperCase().padStart(2, '0')}`,
-    val: (Array.isArray(stack) ? stack[i] : null) || '--'
-  }));
+  const memoryStrip = Array.from({ length: maxSize }, (_, i) => {
+    const item = stack[i];
+    return {
+      addr: `0x${(i * 4).toString(16).toUpperCase().padStart(2, '0')}`,
+      val: item?.value || '--'
+    };
+  });
 
   return (
     <div className="flex flex-col items-center justify-center h-full p-8 space-y-12">
       {/* Visual Stack Container */}
       <div 
-        className="relative w-48 border-x-4 border-b-4 border-carbon bg-caution flex flex-col-reverse p-1"
+        className="relative w-48 border-x-4 border-b-4 border-carbon bg-caution overflow-hidden"
         style={{ height: `${CONTAINER_HEIGHT}px` }}
       >
         {stack.length === 0 && (
-          <div className="absolute inset-0 flex items-center justify-center opacity-30 font-mono text-xs uppercase tracking-[0.3em] rotate-90">
+          <div className="absolute inset-0 flex items-center justify-center opacity-30 font-mono text-xs uppercase tracking-[0.3em] rotate-90 select-none">
             Empty Stack
           </div>
         )}
         
-        {Array.isArray(stack) && stack.map((val, idx) => (
-          <div 
-            key={idx}
-            className={`w-full border-2 border-carbon mb-1 flex items-center justify-center font-mono text-[17px] font-bold transition-all duration-300 animate-in slide-in-from-top-2
-              ${peekedIndex === idx ? 'bg-carbon text-crema scale-105 shadow-lg z-10' : 'bg-crema'}`}
-            style={{ height: `${elementHeight}px` }}
-          >
-            {val}
-          </div>
-        ))}
+        {/* Element Layer */}
+        <div className="absolute inset-0">
+            {stack.map((item, idx) => (
+              <StackElement 
+                key={item.id}
+                value={item.value}
+                idx={idx}
+                elementHeight={elementHeight}
+                gap={GAP}
+                isPeeked={peekedIndex === idx}
+                containerHeight={CONTAINER_HEIGHT}
+              />
+            ))}
+        </div>
 
         {/* Top Pointer */}
         {stack.length > 0 && (
           <div 
-            className="absolute -right-27 flex items-center gap-2 transition-all duration-500"
-            style={{ bottom: `${(stack.length - 1) * (elementHeight + GAP) + (elementHeight / 2) + 4}px` }}
+            className="absolute -right-27 flex items-center gap-2 transition-all duration-500 z-20 pointer-events-none"
+            style={{ 
+                bottom: `${(stack.length - 1) * (elementHeight + GAP) + (elementHeight / 2) + 4}px`,
+                transform: 'translateX(8px)'
+            }}
           >
             <div className="w-8 h-[2px] bg-carbon" />
-            <span className="text-[12px] font-black uppercase tracking-tighter">Stack Top</span>
+            <span className="text-[12px] font-black uppercase tracking-tighter select-none">Stack Top</span>
           </div>
         )}
       </div>
@@ -77,5 +133,6 @@ export const StackVisualizer = ({ stack, peekedIndex, maxSize }: StackVisualizer
       </div>
     </div>
   );
-};
+});
+
 StackVisualizer.displayName = 'StackVisualizer';

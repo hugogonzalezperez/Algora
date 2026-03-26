@@ -1,20 +1,21 @@
 import { useState, useCallback, useRef } from 'react';
 
-export interface StackItem {
+export interface QueueItem {
   id: number;
   value: string;
 }
 
-export const useStack = (initialState: string[] = [], initialCapacity: number = 8) => {
+export const useQueue = (initialState: string[] = [], initialCapacity: number = 8) => {
   const nextId = useRef(0);
-  const [stack, setStack] = useState<StackItem[]>(
+  const [queue, setQueue] = useState<QueueItem[]>(
     initialState.map(val => ({ id: nextId.current++, value: val }))
   );
   const [maxSizeState, setMaxSizeState] = useState(initialCapacity);
-  
+  const [peekedIndex, setPeekedIndex] = useState<number | null>(null);
+
   const setMaxSize = useCallback((newSize: number) => {
     setMaxSizeState(newSize);
-    setStack(prev => {
+    setQueue(prev => {
       if (prev.length > newSize) {
         return prev.slice(0, newSize);
       }
@@ -23,13 +24,11 @@ export const useStack = (initialState: string[] = [], initialCapacity: number = 
   }, []);
 
   const maxSize = maxSizeState;
-  const [peekedIndex, setPeekedIndex] = useState<number | null>(null);
+  const canPush = queue.length < maxSize;
+  const canPop = queue.length > 0;
 
-  const canPush = stack.length < maxSize;
-  const canPop = stack.length > 0;
-
-  const push = useCallback((value: string) => {
-    setStack(prev => {
+  const enqueue = useCallback((value: string) => {
+    setQueue(prev => {
       if (prev.length < maxSize) {
         setPeekedIndex(null);
         return [...prev, { id: nextId.current++, value }];
@@ -38,32 +37,32 @@ export const useStack = (initialState: string[] = [], initialCapacity: number = 
     });
   }, [maxSize]);
 
-  const pop = useCallback(() => {
+  const dequeue = useCallback(() => {
     if (canPop) {
-      setStack(prev => prev.slice(0, -1));
+      setQueue(prev => prev.slice(1));
       setPeekedIndex(null);
     }
   }, [canPop]);
 
   const peek = useCallback(() => {
     if (canPop) {
-      setPeekedIndex(stack.length - 1);
+      setPeekedIndex(0);
       setTimeout(() => setPeekedIndex(null), 1000);
     }
-  }, [canPop, stack.length]);
+  }, [canPop]);
 
   const clear = useCallback(() => {
-    setStack([]);
+    setQueue([]);
     setPeekedIndex(null);
   }, []);
 
   return {
-    stack,
+    queue,
     maxSize,
     setMaxSize,
     peekedIndex,
-    push,
-    pop,
+    enqueue,
+    dequeue,
     peek,
     clear,
     canPush,

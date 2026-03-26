@@ -64,11 +64,11 @@ export const AlgorithmInfo = memo(({ title, description, characteristics, applic
       
       {commonErrors && commonErrors.length > 0 && (
         <div className="card-box p-4 mt-2">
-          <h3 className="heading-2 text-base text-error">Common Errors</h3>
+          <h3 className="heading-2 text-base text-carbon">Common Errors</h3>
           <ul className="space-y-2 mt-3">
             {commonErrors.map((err) => (
               <li key={err.name} className="text-[13px] leading-snug">
-                <span className="font-black text-[11px] uppercase tracking-wider text-error bg-error/10 px-1.5 py-0.5 rounded border border-error/20 mr-2">{err.name}</span>
+                <span className="font-black text-[11px] uppercase tracking-wider text-carbon bg-sepia border border-carbon/20 px-1.5 py-0.5 rounded mr-2">{err.name}</span>
                 <span className="text-carbon/80 font-mono">{err.description}</span>
               </li>
             ))}

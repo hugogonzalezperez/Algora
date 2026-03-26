@@ -1,54 +1,74 @@
 import { useState, useCallback } from 'react';
 import { DataStructuresToolbar } from '../features/data-structures/components/DataStructuresToolbar';
 import { StackVisualizer } from '../features/data-structures/components/StackVisualizer';
+import { QueueVisualizer } from '../features/data-structures/components/QueueVisualizer';
 import { AlgorithmInfo } from '../components/common/AlgorithmInfo';
 import { Alert } from '../components/common/Alert';
 import { DATA_STRUCTURE_METADATA } from '../constants/dataStructures';
 import type { DataStructureType } from '../features/data-structures/types';
 import { useStack } from '../features/data-structures/hooks/useStack';
+import { useQueue } from '../features/data-structures/hooks/useQueue';
 
 export const DataStructuresPage = () => {
   const [selectedStructure, setSelectedStructure] = useState<DataStructureType>('STACK');
   const [errorAlert, setErrorAlert] = useState<{title: string, message: string} | null>(null);
-  const {
-      stack,
-      peekedIndex,
-      canPush,
-      canPop,
-      push,
-      pop,
-      peek,
-      clear,
-      maxSize,
-      setMaxSize
-  } = useStack([], 12);
+  const [maxSize, setMaxSize] = useState(12);
+
+  const stackStore = useStack([], maxSize);
+  const queueStore = useQueue([], maxSize);
+
+  const isStack = selectedStructure === 'STACK';
+  const activeStore = isStack ? stackStore : queueStore;
 
   const handlePush = useCallback((value: string) => {
-    if (!canPush) {
-      setErrorAlert({ title: 'STACK OVERFLOW', message: 'Maximum capacity reached. Cannot push more elements.' });
+    if (!activeStore.canPush) {
+      setErrorAlert({ 
+        title: isStack ? 'STACK OVERFLOW' : 'QUEUE OVERFLOW', 
+        message: 'Maximum capacity reached. Cannot add more elements.' 
+      });
       return;
     }
     setErrorAlert(null);
-    push(value);
-  }, [push, canPush]);
+    if (isStack) stackStore.push(value);
+    else queueStore.enqueue(value);
+  }, [activeStore.canPush, isStack, stackStore, queueStore]);
 
   const handlePop = useCallback(() => {
-    if (!canPop) {
-      setErrorAlert({ title: 'STACK UNDERFLOW', message: 'Stack is empty. Cannot pop elements.' });
+    if (!activeStore.canPop) {
+      setErrorAlert({ 
+        title: isStack ? 'STACK UNDERFLOW' : 'QUEUE UNDERFLOW', 
+        message: isStack ? 'Stack is empty. Cannot pop elements.' : 'Queue is empty. Cannot dequeue elements.' 
+      });
       return;
     }
     setErrorAlert(null);
-    pop();
-  }, [pop, canPop]);
+    if (isStack) stackStore.pop();
+    else queueStore.dequeue();
+  }, [activeStore.canPop, isStack, stackStore, queueStore]);
 
   const handlePeek = useCallback(() => {
-    if (!canPop) {
-      setErrorAlert({ title: 'STACK UNDERFLOW', message: 'Stack is empty. Cannot peek.' });
+    if (!activeStore.canPop) {
+      setErrorAlert({ 
+        title: isStack ? 'STACK UNDERFLOW' : 'QUEUE UNDERFLOW', 
+        message: isStack ? 'Stack is empty. Cannot peek.' : 'Queue is empty. Cannot peek.' 
+      });
       return;
     }
     setErrorAlert(null);
-    peek();
-  }, [peek, canPop]);
+    activeStore.peek();
+  }, [activeStore.canPop, isStack, activeStore]);
+
+  const handleClear = useCallback(() => {
+      setErrorAlert(null);
+      activeStore.clear();
+  }, [activeStore]);
+
+  const handleMaxSizeChange = useCallback((size: number) => {
+      setErrorAlert(null);
+      setMaxSize(size);
+      stackStore.setMaxSize(size);
+      queueStore.setMaxSize(size);
+  }, [stackStore, queueStore]);
 
   const activeMetadata = (DATA_STRUCTURE_METADATA as any)[selectedStructure] || DATA_STRUCTURE_METADATA.STACK;
 
@@ -56,19 +76,16 @@ export const DataStructuresPage = () => {
     <div className="page-container flex flex-col h-[calc(100vh-65px)]">
       <DataStructuresToolbar
         selectedStructure={selectedStructure}
-        onStructureChange={setSelectedStructure}
+        onStructureChange={(type) => {
+            setErrorAlert(null);
+            setSelectedStructure(type);
+        }}
         onPush={handlePush}
         onPop={handlePop}
         onPeek={handlePeek}
-        onClear={() => {
-          setErrorAlert(null);
-          clear();
-        }}
+        onClear={handleClear}
         maxSize={maxSize}
-        onMaxSizeChange={(size) => {
-          setErrorAlert(null);
-          setMaxSize(size);
-        }}
+        onMaxSizeChange={handleMaxSizeChange}
       />
       
       <div className="flex-grow flex flex-col lg:flex-row overflow-hidden border-t border-sepia">
@@ -85,8 +102,10 @@ export const DataStructuresPage = () => {
               </div>
           )}
           
-          {selectedStructure === 'STACK' && (
-            <StackVisualizer stack={stack} peekedIndex={peekedIndex} maxSize={maxSize} />
+          {isStack ? (
+            <StackVisualizer stack={stackStore.stack} peekedIndex={stackStore.peekedIndex} maxSize={maxSize} />
+          ) : (
+            <QueueVisualizer queue={queueStore.queue} peekedIndex={queueStore.peekedIndex} maxSize={maxSize} />
           )}
         </div>
 
