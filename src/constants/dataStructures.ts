@@ -100,4 +100,113 @@ procedure DEQUEUE(queue):
       "mod": "Modulo operator, often used in Circular Queue implementations to wrap indices."
     }
   },
+  LINKED_LIST: {
+    id: 'LINKED_LIST',
+    name: 'Linked List',
+    description: 'A linked list is a linear data structure where elements are not stored at contiguous memory locations. Instead, each element (node) contains a data field and a reference (link) to the next node in the sequence.',
+    timeComplexity: {
+      access: 'O(n)',
+      search: 'O(n)',
+      insertion: 'O(1) - At Head/Tail',
+      deletion: 'O(1) - At Head/Tail',
+    },
+    characteristics: [
+      'Dynamic Size: Can grow or shrink during execution without reallocating the entire structure.',
+      'Non-Contiguous: Nodes can be scattered in memory, connected via pointers.',
+      'Sequential Access: To reach the n-th element, you must traverse all preceding nodes.',
+      'Head and Tail: The list starts at the "Head" and ends at a "Tail" pointing to null.',
+    ],
+    applications: [
+      'Implementation of Stacks and Queues.',
+      'Adjacency List representation in Graphs.',
+      'Undo functionality in applications.',
+      'Dynamic memory allocation (Heap management).',
+      'Music playlists or image galleries (prev/next navigation).',
+    ],
+    commonErrors: [
+      { name: 'Null Pointer Exception', description: 'Attempting to access a property or value of a null node (beyond the tail).' },
+      { name: 'Memory Leak', description: 'Losing the reference to the head or intermediate nodes, making parts of the list unreachable.' }
+    ],
+    pseudocode: `procedure APPEND(head, value):
+  new_node = createNode(value)
+  if head is null:
+    return new_node
+  
+  temp = head
+  while temp.next is not null:
+    temp = temp.next
+  
+  temp.next = new_node
+  return head
+
+procedure DELETE(head, value):
+  if head is null: return null
+  if head.value == value: return head.next
+  
+  temp = head
+  while temp.next is not null:
+    if temp.next.value == value:
+      temp.next = temp.next.next
+      return head
+    temp = temp.next
+  return head`,
+    pseudocodeLegend: {
+      "head": "The first node in the list.",
+      "temp": "A temporary pointer used for traversal.",
+      "next": "The pointer field within a node that links to the next element."
+    }
+  },
+  HASH_TABLE: {
+    id: 'HASH_TABLE',
+    name: 'Hash Table',
+    description: 'A hash table is a data structure that implements an associative array abstract data type, a structure that can map keys to values. It uses a hash function to compute an index into an array of buckets or slots, from which the desired value can be found.',
+    timeComplexity: {
+      access: 'N/A',
+      search: 'O(1) Avg, O(n) Worst',
+      insertion: 'O(1) Avg, O(n) Worst',
+      deletion: 'O(1) Avg, O(n) Worst',
+    },
+    characteristics: [
+      'Hash Function: Converts a key into a numerical index.',
+      'Collision Resolution: Managing cases where different keys produce the same index (e.g., Chaining or Open Addressing).',
+      'Fast Lookup: Provides $O(1)$ average time complexity for most operations.',
+      'Load Factor: The ratio of elements to buckets; affects performance and triggers resizing.',
+    ],
+    applications: [
+      'Database Indexing for fast record retrieval.',
+      'Caching mechanisms (e.g., Memcached, Redis).',
+      'Symbol tables in Compilers.',
+      'Set implementations (Unique elements).',
+      'Password storage (Hash-based security).',
+    ],
+    commonErrors: [
+      { name: 'Hash Collision', description: 'Multiple keys mapping to the same index, which can degrade performance if not handled correctly.' },
+      { name: 'Poor Hash Function', description: 'A function that distributes keys unevenly, leading to "clustering" and many collisions.' }
+    ],
+    pseudocode: `procedure INSERT(table, key, value):
+  index = hash(key) mod capacity
+  bucket = table[index]
+  
+  for each entry in bucket:
+    if entry.key == key:
+      entry.value = value
+      return
+  
+  bucket.append({key, value})
+
+procedure SEARCH(table, key):
+  index = hash(key) mod capacity
+  bucket = table[index]
+  
+  for each entry in bucket:
+    if entry.key == key:
+      return entry.value
+  
+  return null`,
+    pseudocodeLegend: {
+      "hash(key)": "Function that converts a key into a large integer.",
+      "mod capacity": "Ensures the index fits within the internal array bounds.",
+      "bucket": "A slot in the array, often containing a linked list for collision handling."
+    }
+  },
 };

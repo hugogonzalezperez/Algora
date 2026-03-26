@@ -7,9 +7,7 @@ import { CustomSelect } from '../../../components/common/CustomSelect';
 interface DataStructuresToolbarProps {
   selectedStructure: DataStructureType;
   onStructureChange: (type: DataStructureType) => void;
-  onPush: (val: string) => void;
-  onPop: () => void;
-  onPeek: () => void;
+  onAction: (actionType: string, value?: string, key?: string) => void;
   onClear: () => void;
   maxSize: number;
   onMaxSizeChange: (size: number) => void;
@@ -18,22 +16,68 @@ interface DataStructuresToolbarProps {
 export const DataStructuresToolbar = ({
   selectedStructure,
   onStructureChange,
-  onPush,
-  onPop,
-  onPeek,
+  onAction,
   onClear,
   maxSize,
   onMaxSizeChange
 }: DataStructuresToolbarProps) => {
   const [inputValue, setInputValue] = useState('');
+  const [keyValue, setKeyValue] = useState('');
 
-  const handlePush = () => {
-    if (inputValue.trim()) {
-      onPush(inputValue.trim());
-      setInputValue('');
-    } else {
-      const randomVal = Math.floor(Math.random() * 100000).toString();
-      onPush(randomVal);
+  const handleAction = (actionType: string, requiresInput: boolean = false, requiresKey: boolean = false) => {
+    let finalVal = inputValue.trim();
+    let finalKey = keyValue.trim();
+    
+    if (requiresInput && !finalVal && actionType !== 'DELETE' && actionType !== 'SEARCH') {
+        finalVal = Math.floor(Math.random() * 100).toString();
+    }
+    
+    if (requiresKey && !finalKey && actionType !== 'DELETE' && actionType !== 'SEARCH') {
+        finalKey = `k${Math.floor(Math.random() * 100)}`;
+    }
+
+    onAction(actionType, finalVal, finalKey);
+    setInputValue('');
+    if (actionType !== 'SEARCH') setKeyValue('');
+  };
+
+  const renderButtons = () => {
+    switch(selectedStructure) {
+      case 'STACK':
+        return (
+          <>
+            <button onClick={() => handleAction('PUSH', true)} className="btn-primary">Push</button>
+            <button onClick={() => handleAction('POP')} className="btn-primary">Pop</button>
+            <button onClick={() => handleAction('PEEK')} className="btn-primary">Peek</button>
+          </>
+        );
+      case 'QUEUE':
+        return (
+          <>
+            <button onClick={() => handleAction('PUSH', true)} className="btn-primary">Enqueue</button>
+            <button onClick={() => handleAction('POP')} className="btn-primary">Dequeue</button>
+            <button onClick={() => handleAction('PEEK')} className="btn-primary">Peek</button>
+          </>
+        );
+      case 'LINKED_LIST':
+        return (
+          <>
+            <button onClick={() => handleAction('APPEND', true)} className="btn-primary">Append</button>
+            <button onClick={() => handleAction('PREPEND', true)} className="btn-primary">Prepend</button>
+            <button onClick={() => handleAction('SEARCH', true)} className="btn-primary !bg-transparent !text-carbon hover:!bg-carbon/5">Search</button>
+            <button onClick={() => handleAction('DELETE', true)} className="btn-primary bg-carbon text-crema hover:bg-carbon/80">Delete</button>
+          </>
+        );
+      case 'HASH_TABLE':
+        return (
+          <>
+            <button onClick={() => handleAction('INSERT', true, true)} className="btn-primary">Insert</button>
+            <button onClick={() => handleAction('SEARCH', false, true)} className="btn-primary !bg-transparent !text-carbon hover:!bg-carbon/5">Search</button>
+            <button onClick={() => handleAction('DELETE', false, true)} className="btn-primary bg-carbon text-crema hover:bg-carbon/80">Delete</button>
+          </>
+        );
+      default:
+        return null;
     }
   };
 
@@ -43,8 +87,12 @@ export const DataStructuresToolbar = ({
       <div className="flex items-center gap-4">
         <CustomSelect
           value={selectedStructure}
-          onChange={(val) => onStructureChange(val as DataStructureType)}
-          options={Object.values(DATA_STRUCTURES).map((ds) => ({ value: ds.id, label: ds.name }))}
+          onChange={(val) => {
+            onStructureChange(val as DataStructureType);
+            setInputValue('');
+            setKeyValue('');
+          }}
+          options={Object.values(DATA_STRUCTURES).filter(ds => ds.id !== 'TREE').map((ds) => ({ value: ds.id, label: ds.name }))}
           className="h-12 bg-[#f2f2f2] border-2 border-carbon text-carbon text-sm font-mono font-bold tracking-tight uppercase transition-all min-w-[200px]"
         />
       </div>
@@ -66,32 +114,29 @@ export const DataStructuresToolbar = ({
         <div className="w-[1px] h-8 bg-carbon/10 mx-2 hidden lg:block" />
 
         <div className="flex items-center gap-4 pr-4">
+          
+          {selectedStructure === 'HASH_TABLE' && (
+            <input
+              type="text"
+              placeholder="Key"
+              value={keyValue}
+              onChange={(e) => setKeyValue(e.target.value)}
+              className="w-24 h-10 px-3 bg-crema border border-sepia text-sm font-mono focus:outline-none focus:border-carbon/20"
+              onKeyDown={(e) => e.key === 'Enter' && handleAction('INSERT', true, true)}
+            />
+          )}
+
           <input
             type="text"
-            placeholder="Value/Random"
+            placeholder={selectedStructure === 'HASH_TABLE' ? "Value" : "Value/Rand"}
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
-            className={`w-32 h-10 px-3 bg-crema border border-sepia text-sm font-mono focus:outline-none focus:border-carbon/20`}
-            onKeyDown={(e) => e.key === 'Enter' && handlePush()}
+            className="w-28 h-10 px-3 bg-crema border border-sepia text-sm font-mono focus:outline-none focus:border-carbon/20"
+            onKeyDown={(e) => e.key === 'Enter' && handleAction(selectedStructure === 'HASH_TABLE' ? 'INSERT' : (selectedStructure === 'LINKED_LIST' ? 'APPEND' : 'PUSH'), true, selectedStructure === 'HASH_TABLE')}
           />
-          <button 
-            onClick={handlePush}
-            className="btn-primary"
-          >
-            {selectedStructure === 'QUEUE' ? 'Enqueue' : 'Push'}
-          </button>
-          <button 
-            onClick={onPop}
-            className="btn-primary"
-          >
-            {selectedStructure === 'QUEUE' ? 'Dequeue' : 'Pop'}
-          </button>
-          <button 
-            onClick={onPeek}
-            className="btn-primary"
-          >
-            Peek
-          </button>
+          
+          {renderButtons()}
+          
           <div className="w-[1px] h-8 bg-carbon/10 mx-2 hidden lg:block" />
           <UnderlineButton label="Clear" onClick={onClear} />
         </div>

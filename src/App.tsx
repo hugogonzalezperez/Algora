@@ -10,11 +10,11 @@ export default function App() {
   const [currentPage, setCurrentPage] = useState<Page>(PAGES.DATA);
 
   return (
-    <div className="min-h-screen bg-crema text-carbon font-mono flex flex-col">
+    <div className={`bg-crema text-carbon font-mono flex flex-col ${currentPage === PAGES.DATA ? 'h-screen overflow-hidden' : 'min-h-screen'}`}>
       {/* Header Minimalista - Unified for both pages */}
-      <nav className="border-b border-sepia px-8 py-4 flex justify-between items-center bg-crema">
+      <nav className="border-b border-sepia px-8 py-4 flex justify-between items-center bg-crema shrink-0">
         <div className="flex items-center gap-10">
-          <span className="font-bold text-3xl tracking-tighter">Algora</span>
+          <span className="font-bold text-3xl tracking-tighter cursor-pointer" onClick={() => setCurrentPage(PAGES.DATA)}>Algora</span>
           <div className="flex gap-6 text-sm font-bold">
             <button
               onClick={() => setCurrentPage(PAGES.PATH)}
@@ -41,7 +41,7 @@ export default function App() {
         </div>
       </nav>
 
-      <main className="flex-grow">
+      <main className={`flex-1 bg-crema ${currentPage === PAGES.DATA ? 'overflow-hidden' : ''}`}>
         {currentPage === PAGES.PATH && <PathfindingPage />}
         {currentPage === PAGES.SORT && <SortingPage />}
         {currentPage === PAGES.DATA && <DataStructuresPage />}
