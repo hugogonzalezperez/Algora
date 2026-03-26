@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { PathfindingPage } from './pages/PathfindingPage';
 import { SortingPage } from './pages/SortingPage';
+import { DataStructuresPage } from './pages/DataStructuresPage';
 
-const PAGES = { PATH: 'path', SORT: 'sort' } as const;
+const PAGES = { PATH: 'path', SORT: 'sort', DATA: 'data' } as const;
 type Page = typeof PAGES[keyof typeof PAGES];
 
 export default function App() {
-  const [currentPage, setCurrentPage] = useState<Page>(PAGES.SORT);
+  const [currentPage, setCurrentPage] = useState<Page>(PAGES.DATA);
 
   return (
     <div className="min-h-screen bg-crema text-carbon font-mono flex flex-col">
@@ -29,12 +30,21 @@ export default function App() {
               Sorting
               <div className={`absolute -bottom-1 left-0 w-full h-[2px] bg-carbon transition-all duration-300 origin-left ${currentPage === PAGES.SORT ? 'scale-x-100 opacity-100' : 'scale-x-0 group-hover:scale-x-100 opacity-100'}`} />
             </button>
+            <button
+              onClick={() => setCurrentPage(PAGES.DATA)}
+              className={`relative py-1 border-0 ${currentPage === PAGES.DATA ? 'opacity-100' : 'opacity-40'} hover:opacity-100 transition-all uppercase group bg-transparent cursor-pointer`}
+            >
+              Data Structures
+              <div className={`absolute -bottom-1 left-0 w-full h-[2px] bg-carbon transition-all duration-300 origin-left ${currentPage === PAGES.DATA ? 'scale-x-100 opacity-100' : 'scale-x-0 group-hover:scale-x-100 opacity-100'}`} />
+            </button>
           </div>
         </div>
       </nav>
 
       <main className="flex-grow">
-        {currentPage === PAGES.PATH ? <PathfindingPage /> : <SortingPage />}
+        {currentPage === PAGES.PATH && <PathfindingPage />}
+        {currentPage === PAGES.SORT && <SortingPage />}
+        {currentPage === PAGES.DATA && <DataStructuresPage />}
       </main>
     </div>
   );

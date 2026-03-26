@@ -1,12 +1,11 @@
-
 import { useState, useEffect } from 'react';
-import { SortingToolbar } from '../components/SortingToolbar';
-import { SortingCanvas } from '../components/sorting/SortingCanvas';
-import { SortingAlgorithmInfo } from '../components/sorting/SortingAlgorithmInfo';
-import { SORTING_METADATA } from '../algorithms/sorting';
-import type { SortingAlgorithmMetadata } from '../types/sorting';
-import { AlgorithmCode } from '../components/sorting/AlgorithmCode';
-import { useSortingAnimation } from '../hooks/useSortingAnimation';
+import { SortingToolbar } from '../features/sorting/components/SortingToolbar';
+import { SortingCanvas } from '../features/sorting/components/SortingCanvas';
+import { SortingAlgorithmInfo } from '../features/sorting/components/SortingAlgorithmInfo';
+import { SORTING_METADATA } from '../features/sorting/algorithms/index.ts';
+import type { SortingAlgorithmMetadata } from '../features/sorting/types';
+import { AlgorithmCode } from '../features/sorting/components/AlgorithmCode';
+import { useSortingAnimation } from '../features/sorting/hooks/useSortingAnimation';
 
 const DEFAULT_ARRAY_SIZE = 50;
 const INITIAL_SPEED = 200;
@@ -124,3 +123,4 @@ export const SortingPage = () => {
     </div>
   );
 };
+SortingPage.displayName = 'SortingPage';

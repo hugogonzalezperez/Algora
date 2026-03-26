@@ -55,7 +55,7 @@ body {
   }
 
   .btn-primary {
-    @apply px-8 py-2.5 font-bold bg-carbon text-crema border-carbon hover:bg-crema hover:text-carbon shadow-sm;
+    @apply px-8 py-2.5 font-bold font-mono bg-carbon text-crema border-carbon hover:bg-crema hover:text-carbon shadow-sm;
   }
 
   .btn-secondary {
@@ -153,7 +153,7 @@ body {
 
   /* Alerts */
   .alert {
-    @apply flex gap-6 p-8 border-2 border-carbon bg-crema text-carbon font-mono relative overflow-hidden transition-all duration-300;
+    @apply flex items-start gap-4 p-4 lg:p-5 border-4 border-carbon shadow-[6px_6px_0px_0px_rgba(26,26,26,1)] bg-crema text-carbon font-mono relative overflow-hidden transition-all duration-300;
   }
 
   .alert-info {
@@ -165,7 +165,7 @@ body {
   }
 
   .alert-error {
-    @apply border-carbon bg-crema;
+    @apply border-error bg-crema text-error;
   }
 
   .alert-success {
@@ -173,15 +173,15 @@ body {
   }
 
   .alert-title {
-    @apply font-bold text-xl uppercase tracking-wider mb-2 block;
+    @apply font-bold text-sm lg:text-base uppercase tracking-wider mb-1 block;
   }
 
   .alert-description {
-    @apply text-sm leading-relaxed opacity-90;
+    @apply text-[12px] lg:text-[13px] leading-relaxed opacity-90 text-carbon font-medium;
   }
 
   .alert-icon {
-    @apply shrink-0 w-8 h-8;
+    @apply shrink-0 w-5 h-5 lg:w-6 lg:h-6 mt-0.5;
   }
   /* Modals */
   .modal-overlay {
