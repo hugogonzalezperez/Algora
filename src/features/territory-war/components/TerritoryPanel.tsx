@@ -1,29 +1,16 @@
-// ─────────────────────────────────────────────
-// TerritoryPanel — Right-side control panel
-//
-// Three sections separated by dividers:
-//   1. ARMY CONFIG  — per-type agent config rows
-//   2. TERRITORY %  — animated stats bars
-//   3. CONTROLS     — play/pause/reset + speed + GEN counter
-// ─────────────────────────────────────────────
-
 import { memo } from 'react';
-import { AgentConfigRow } from './AgentConfigRow';
+import { AttackerRow } from './AttackerRow';
 import { TerritoryBar } from './TerritoryBar';
-import { AGENT_NAMES } from '../constants';
-import type { AgentType, AgentStats, GamePhase, AgentTypeConfig } from '../types';
-
-const AGENT_TYPES: AgentType[] = ['GREEDY', 'BORDER', 'HUNTER', 'RANDOM'];
+import type { AgentType, AgentStats, GamePhase } from '../types';
 
 interface TerritoryPanelProps {
   phase: GamePhase;
   generation: number;
   stats: AgentStats;
-  agentTypeConfigs: AgentTypeConfig[];   // one entry per AgentType
-  totalAgentsPlaced: number;
-  draggingType: AgentType | null;
-  onAlgorithmChange: (type: AgentType, algo: AgentType) => void;
-  onSetDragging: (type: AgentType | null) => void;
+  attackerConfigs: any[];
+  draggingId: number | null;
+  onAlgorithmChange: (id: number, algo: AgentType) => void;
+  onSetDraggingId: (id: number | null) => void;
 }
 
 const SectionLabel = ({ children }: { children: React.ReactNode }) => (
@@ -37,59 +24,26 @@ export const TerritoryPanel = memo(({
   phase,
   generation,
   stats,
-  agentTypeConfigs,
-  totalAgentsPlaced,
-  draggingType,
+  attackerConfigs,
+  draggingId,
   onAlgorithmChange,
-  onSetDragging,
+  onSetDraggingId,
 }: TerritoryPanelProps) => {
   const isRunning  = phase === 'RUNNING';
   const isFinished = phase === 'FINISHED';
   const totalCells = (stats && Object.values(stats).reduce((s, a) => s + a.cells, 0)) || 0;
 
-  // Find winner if finished
-  const winner = isFinished
-    ? Object.entries(stats).sort(([,a],[,b]) => b.cells - a.cells)[0]
-    : null;
-
-  // Counts per type from stats
-  const countPerType: Partial<Record<AgentType, number>> = {};
-  for (const s of Object.values(stats)) {
-    const t = s.type as AgentType;
-    countPerType[t] = (countPerType[t] ?? 0) + 1;
-  }
-
-  // Aggregate stats per type for the bars — use explicit typed variables to avoid implicit any
-  type TypeStatEntry = { cells: number; pct: number; agentIds: number[] };
-  const typeStats: Record<AgentType, TypeStatEntry | undefined> = {
-    GREEDY: undefined, BORDER: undefined, HUNTER: undefined, RANDOM: undefined,
-  };
-  for (const s of Object.values(stats)) {
-    const t = s.type as AgentType;
-    const existing = typeStats[t];
-    if (!existing) {
-      typeStats[t] = { cells: s.cells, pct: s.pct, agentIds: [1] };
-    } else {
-      existing.cells += s.cells;
-      existing.pct   += s.pct;
-      existing.agentIds.push(1);
-    }
-  }
-
   return (
-    <div className="h-full flex flex-col border-l-2 border-carbon bg-crema overflow-y-auto scrollbar-hide">
+    <div className="h-full flex flex-col bg-crema overflow-y-auto scrollbar-hide">
       {/* ── Header ─────────────────────────────────────────────────────── */}
       <div className="px-5 pt-5 pb-3 border-b border-sepia shrink-0">
         <h1 className="text-base font-black uppercase tracking-[0.15em] text-carbon leading-tight">
           Territory War
         </h1>
         <p className="text-[10px] font-mono text-carbon/40 mt-0.5">
-          4 strategies fight for space
+          Dynamic AI Battle Simulator
         </p>
       </div>
-
-      {/* ── Grid Config moved to Toolbar ── */}
-
 
       {/* ── Army Config ────────────────────────────────────────────────── */}
       <div className="px-5 py-3 shrink-0">
@@ -97,29 +51,22 @@ export const TerritoryPanel = memo(({
 
         {phase === 'SETUP' && (
           <p className="text-[9px] text-carbon/40 font-mono mb-2 leading-relaxed">
-            Click <strong>+ Place</strong> then click the grid to deploy agents.
-            {draggingType && (
-              <> Placing <strong className="text-carbon">{AGENT_NAMES[draggingType]}</strong>…</>
-            )}
+            Drag attackers on the grid or use the <strong>Move</strong> buttons below.
           </p>
         )}
 
-        {agentTypeConfigs.map(cfg => {
-          const placed = Object.values(stats).filter(s => s.type === cfg.type).length;
-          return (
-            <AgentConfigRow
-              key={cfg.type}
-              type={cfg.type}
-              algorithm={cfg.algorithm}
-              count={placed}
-              maxRemaining={24 - totalAgentsPlaced}
-              isActive={draggingType === cfg.type}
+        <div className="space-y-1">
+          {attackerConfigs.map(attacker => (
+            <AttackerRow
+              key={attacker.id}
+              attacker={attacker}
+              isDragging={draggingId === attacker.id}
               isDisabled={isRunning || isFinished}
-              onAlgorithmChange={(algo) => onAlgorithmChange(cfg.type, algo)}
-              onSetDragging={onSetDragging}
+              onAlgorithmChange={onAlgorithmChange}
+              onSetDragging={onSetDraggingId}
             />
-          );
-        })}
+          ))}
+        </div>
       </div>
 
       {/* ── Territory Stats ────────────────────────────────────────────── */}
@@ -127,37 +74,21 @@ export const TerritoryPanel = memo(({
         <div className="px-5 py-3 border-t border-sepia shrink-0">
           <SectionLabel>Territory %</SectionLabel>
           <div className="space-y-3 mt-2">
-            {AGENT_TYPES.map(type => {
-              const ts = typeStats[type];
-              if (!ts || ts.agentIds.length === 0) return null;
-              const firstId = ts.agentIds[0];
-              return (
-                <TerritoryBar
-                  key={type}
-                  agentId={firstId}
-                  type={type}
-                  pct={ts.pct}
-                  cells={ts.cells}
-                  totalCells={totalCells}
-                />
-              );
-            })}
+            {Object.entries(stats).map(([id, s]) => (
+              <TerritoryBar
+                key={id}
+                agentId={Number(id)}
+                type={s.type as AgentType}
+                pct={s.pct}
+                cells={s.cells}
+                totalCells={totalCells}
+              />
+            ))}
           </div>
         </div>
       )}
 
-      {/* ── Winner banner ──────────────────────────────────────────────── */}
-      {isFinished && winner && (
-        <div className="mx-5 mb-3 p-3 border-2 border-carbon bg-carbon text-crema shrink-0">
-          <div className="text-[9px] uppercase tracking-widest font-bold text-crema/60">Winner</div>
-          <div className="text-base font-black uppercase tracking-wider">
-            {AGENT_NAMES[stats[Number(winner[0])].type]}
-          </div>
-          <div className="text-xs font-mono text-crema/60">{winner[1].pct}% of territory</div>
-        </div>
-      )}
-
-      {/* ── Controls moved to Toolbar, only keeping Gen counter ── */}
+      {/* ── Generation counter ── */}
       <div className="px-5 py-4 border-t border-sepia mt-auto shrink-0 space-y-4">
         <div className="text-center">
           <div className="text-[9px] uppercase tracking-widest text-carbon/30 font-mono">Generation</div>
@@ -169,5 +100,7 @@ export const TerritoryPanel = memo(({
     </div>
   );
 });
+
+TerritoryPanel.displayName = 'TerritoryPanel';
 
 TerritoryPanel.displayName = 'TerritoryPanel';

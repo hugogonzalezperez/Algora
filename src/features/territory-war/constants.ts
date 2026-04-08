@@ -5,20 +5,37 @@
 import type { AgentType } from './types';
 
 /** Hex colors per agent type — matches the original game palette */
-export const AGENT_COLORS: Record<AgentType, string> = {
+export const AGENT_COLORS: Record<string, string> = {
   GREEDY: '#E8735A',   // coral
   BORDER: '#1B1C1A',   // carbon / black
   HUNTER: '#2D6A4F',   // dark green
   RANDOM: '#E9C46A',   // amber / yellow
+  STEEL:  '#457B9D',   // steel blue
+  PURPLE: '#6D597A',   // deep purple
 };
 
 /** RGBA pixel values for direct ImageData writes [R, G, B, A] */
-export const AGENT_RGBA: Record<AgentType, [number, number, number, number]> = {
+export const AGENT_RGBA: Record<string, [number, number, number, number]> = {
   GREEDY: [232, 115,  90, 255],
   BORDER: [ 27,  28,  26, 255],
   HUNTER: [ 45, 106,  79, 255],
   RANDOM: [233, 196, 106, 255],
+  STEEL:  [ 69, 123, 157, 255],
+  PURPLE: [109,  89, 122, 255],
 };
+
+export const ATTACKER_COLORS = [
+  '#E8735A', '#1B1C1A', '#2D6A4F', '#E9C46A', '#457B9D', '#6D597A'
+];
+
+export const ATTACKER_RGBA: [number, number, number, number][] = [
+  [232, 115,  90, 255],
+  [ 27,  28,  26, 255],
+  [ 45, 106,  79, 255],
+  [233, 196, 106, 255],
+  [ 69, 123, 157, 255],
+  [109,  89, 122, 255],
+];
 
 /** Empty cell RGBA */
 export const EMPTY_RGBA: [number, number, number, number] = [241, 239, 234, 255]; // sepia

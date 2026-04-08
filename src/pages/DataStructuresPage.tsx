@@ -30,7 +30,7 @@ export const DataStructuresPage = () => {
       case 'STACK':
         if (actionType === 'PUSH') {
           if (!stackStore.canPush) {
-            setErrorAlert({ title: 'STACK FULL', message: 'Maximum capacity (12) reached.' });
+            setErrorAlert({ title: 'STACK FULL', message: `Maximum capacity (${maxSize}) reached.` });
             return;
           }
           stackStore.push(value || '');
@@ -52,7 +52,7 @@ export const DataStructuresPage = () => {
       case 'QUEUE':
         if (actionType === 'PUSH') {
           if (!queueStore.canPush) {
-            setErrorAlert({ title: 'QUEUE FULL', message: 'Maximum capacity (12) reached.' });
+            setErrorAlert({ title: 'QUEUE FULL', message: `Maximum capacity (${maxSize}) reached.` });
             return;
           }
           queueStore.enqueue(value || '');
@@ -74,13 +74,13 @@ export const DataStructuresPage = () => {
       case 'LINKED_LIST':
         if (actionType === 'APPEND') {
           if (!linkedListStore.canAdd) {
-            setErrorAlert({ title: 'VISUAL LIMIT', message: 'Linked List reached maximum display capacity (12).' });
+            setErrorAlert({ title: 'VISUAL LIMIT', message: `Linked List reached maximum display capacity (${maxSize}).` });
             return;
           }
           linkedListStore.append(value || '');
         } else if (actionType === 'PREPEND') {
           if (!linkedListStore.canAdd) {
-            setErrorAlert({ title: 'VISUAL LIMIT', message: 'Linked List reached maximum display capacity (12).' });
+            setErrorAlert({ title: 'VISUAL LIMIT', message: `Linked List reached maximum display capacity (${maxSize}).` });
             return;
           }
           linkedListStore.prepend(value || '');

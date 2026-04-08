@@ -15,8 +15,10 @@ interface TerritoryToolbarProps {
   phase: GamePhase;
   isRunning: boolean;
   gridSize: number;
+  attackerCount: number;
   speed: number;
   onGridSizeChange: (val: number) => void;
+  onAttackerCountChange: (val: number) => void;
   onSpeedChange: (val: number) => void;
   onPlay: () => void;
   onPause: () => void;
@@ -28,8 +30,10 @@ export const TerritoryToolbar = memo(({
   phase,
   isRunning,
   gridSize,
+  attackerCount,
   speed,
   onGridSizeChange,
+  onAttackerCountChange,
   onSpeedChange,
   onPlay,
   onPause,
@@ -37,11 +41,12 @@ export const TerritoryToolbar = memo(({
   canPlay
 }: TerritoryToolbarProps) => {
   const isFinished = phase === 'FINISHED';
+  const handlePlayPause = isRunning ? onPause : onPlay;
 
   return (
     <div className="toolbar-noborder border-b border-sepia">
-      {/* Section 1: Grid Configuration */}
-      <div className="flex items-center gap-4">
+      {/* Section 1: Configuration */}
+      <div className="flex items-center gap-8">
         <div className="flex flex-col">
           <span className="text-[9px] font-black uppercase tracking-widest text-carbon/40 mb-1">Grid Size</span>
           <div className="flex items-center gap-3">
@@ -54,7 +59,24 @@ export const TerritoryToolbar = memo(({
               value={gridSize}
               disabled={isRunning || isFinished}
               onChange={(e) => onGridSizeChange(Number(e.target.value))}
-              className="accent-carbon h-1 w-32 cursor-pointer disabled:opacity-30"
+              className="accent-carbon h-1 w-24 cursor-pointer disabled:opacity-30"
+            />
+          </div>
+        </div>
+
+        <div className="flex flex-col">
+          <span className="text-[9px] font-black uppercase tracking-widest text-carbon/40 mb-1">Attackers</span>
+          <div className="flex items-center gap-3">
+            <span className="text-xs font-mono font-bold w-4 text-center">{attackerCount}</span>
+            <input
+              type="range"
+              min={2}
+              max={6}
+              step={1}
+              value={attackerCount}
+              disabled={isRunning || isFinished}
+              onChange={(e) => onAttackerCountChange(Number(e.target.value))}
+              className="accent-carbon h-1 w-24 cursor-pointer disabled:opacity-30"
             />
           </div>
         </div>
@@ -63,7 +85,7 @@ export const TerritoryToolbar = memo(({
       {/* Section 2: Main Play Controls */}
       <div className="flex items-center gap-4 flex-grow justify-center">
         <button
-          onClick={isRunning ? onPause : onPlay}
+          onClick={handlePlayPause}
           disabled={!canPlay && !isRunning}
           className="btn-primary min-w-[140px] hover:ring-2 hover:ring-carbon hover:ring-offset-2 transition-all duration-300"
         >

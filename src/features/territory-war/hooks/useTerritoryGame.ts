@@ -10,7 +10,7 @@
 // ─────────────────────────────────────────────
 
 import { useRef, useState, useCallback, useEffect } from 'react';
-import type { AgentInstance, AgentStats, GamePhase } from '../types';
+import type { AgentInstance, AgentStats, GamePhase, AgentType } from '../types';
 import { AGENT_RGBA, EMPTY_RGBA, GRID_LINE_RGBA } from '../constants';
 import { greedyStep } from '../algorithms/greedy';
 import { borderStep } from '../algorithms/border';
@@ -66,9 +66,11 @@ export interface TerritoryGameState {
   hoveredCell: { row: number; col: number } | null;
   play: (speedMs?: number) => void;
   pause: () => void;
-  reset: () => void;
+  reset: (newAgents?: AgentInstance[]) => void;
   placeAgent: (agent: AgentInstance) => void;
   removeAgent: (agentId: number) => void;
+  moveAgent: (agentId: number, row: number, col: number) => void;
+  updateAgent: (agentId: number, type: AgentType) => void;
   moveAgentPreview: (row: number, col: number) => void;
   clearHover: () => void;
   getCell: (row: number, col: number) => number; // returns agentId (0=empty)
@@ -194,7 +196,37 @@ export function useTerritoryGame(
     const id = imageDataRef.current;
     if (!canvas || !id) return;
     const ctx = canvas.getContext('2d');
-    ctx?.putImageData(id, 0, 0);
+    if (!ctx) return;
+    ctx.putImageData(id, 0, 0);
+
+    // Draw eyes for each active agent at their current position
+    const r = rowsRef.current;
+    const c = colsRef.current;
+    const cellW = canvas.width / c;
+    const cellH = canvas.height / r;
+
+    for (const agent of agentsRef.current) {
+      const cx = (agent.col + 0.5) * cellW;
+      const cy = (agent.row + 0.5) * cellH;
+      
+      const eyeOffset = cellW * 0.18;
+      const whiteSize = Math.max(2, cellW * 0.14);
+      const pupilSize = Math.max(1, cellW * 0.07);
+
+      // 1. Draw Whites
+      ctx.fillStyle = '#FFFFFF';
+      ctx.beginPath();
+      ctx.arc(cx - eyeOffset, cy - eyeOffset, whiteSize, 0, Math.PI * 2);
+      ctx.arc(cx + eyeOffset, cy - eyeOffset, whiteSize, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 2. Draw Pupils
+      ctx.fillStyle = '#000000';
+      ctx.beginPath();
+      ctx.arc(cx - eyeOffset, cy - eyeOffset, pupilSize, 0, Math.PI * 2);
+      ctx.arc(cx + eyeOffset, cy - eyeOffset, pupilSize, 0, Math.PI * 2);
+      ctx.fill();
+    }
   }, []);
 
   // ── Stats recalculation (O(agents)) ──────────────────────────────────────
@@ -221,7 +253,7 @@ export function useTerritoryGame(
     const r    = rowsRef.current;
     const c    = colsRef.current;
     const colorMap = new Map<number, [number, number, number, number]>();
-    for (const a of agents) colorMap.set(a.id, AGENT_RGBA[a.type]);
+    for (const a of agents) colorMap.set(a.id, (a as any).rgba || AGENT_RGBA[a.type]);
 
     let anyMoved = false;
 
@@ -325,7 +357,7 @@ export function useTerritoryGame(
     setPhase('PAUSED');
   }, []);
 
-  const reset = useCallback(() => {
+  const reset = useCallback((newAgents?: AgentInstance[]) => {
     stopRef.current = true;
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
 
@@ -343,6 +375,11 @@ export function useTerritoryGame(
     setAgentsState([]);
 
     initImageData();
+
+    // If new agents provided (e.g. random spawn), place them
+    if (newAgents) {
+      newAgents.forEach(a => placeAgent(a));
+    }
   }, [initImageData]);
 
   const placeAgent = useCallback((agent: AgentInstance) => {
@@ -363,8 +400,10 @@ export function useTerritoryGame(
     const frontier = buildFrontier(gridRef.current, r, c, agent.id);
     frontiersRef.current.set(agent.id, frontier);
 
-    // Paint cell
-    paintCell(agent.row, agent.col, AGENT_RGBA[agent.type]);
+    // Paint cell (use agentId to find color index or use fixed mapping if needed)
+    // For simplicity, we'll assume color index comes from somewhere or we use a palette
+    const rgba = (agent as any).rgba || AGENT_RGBA[agent.type] || [0,0,0,255];
+    paintCell(agent.row, agent.col, rgba);
     flushCanvas();
 
     setAgentsState([...agentsRef.current]);
@@ -390,7 +429,7 @@ export function useTerritoryGame(
     frontiersRef.current.delete(agentId);
     cellCountsRef.current.delete(agentId);
 
-    // Rebuild frontiers for remaining agents (their frontiers may have changed)
+    // Rebuild frontiers for remaining agents
     for (const a of agentsRef.current) {
       frontiersRef.current.set(a.id, buildFrontier(grid, r, c, a.id));
     }
@@ -399,6 +438,50 @@ export function useTerritoryGame(
     setAgentsState([...agentsRef.current]);
     rebuildStats();
   }, [paintCell, flushCanvas, rebuildStats]);
+
+  const moveAgent = useCallback((agentId: number, row: number, col: number) => {
+    const agent = agentsRef.current.find(a => a.id === agentId);
+    if (!agent) return;
+
+    const c = colsRef.current;
+    const r = rowsRef.current;
+    const oldIdx = idx(agent.row, agent.col, c);
+    const newIdx = idx(row, col, c);
+
+    if (row < 0 || row >= r || col < 0 || col >= c) return;
+    if (gridRef.current[newIdx] !== 0 && gridRef.current[newIdx] !== agentId) return;
+
+    // Clear old pos
+    gridRef.current[oldIdx] = 0;
+    paintCell(agent.row, agent.col, EMPTY_RGBA);
+
+    // Update agent
+    agent.row = row;
+    agent.col = col;
+
+    // Set new pos
+    gridRef.current[newIdx] = agentId;
+    const rgba = (agent as any).rgba || AGENT_RGBA[agent.type] || [0,0,0,255];
+    paintCell(row, col, rgba);
+
+    // Rebuild frontier for *all* agents because moving one might free up cells for others
+    for (const a of agentsRef.current) {
+      frontiersRef.current.set(a.id, buildFrontier(gridRef.current, r, c, a.id));
+    }
+
+    flushCanvas();
+    setAgentsState([...agentsRef.current]);
+    rebuildStats();
+  }, [paintCell, flushCanvas, rebuildStats]);
+
+  const updateAgent = useCallback((agentId: number, type: AgentType) => {
+    const agent = agentsRef.current.find(a => a.id === agentId);
+    if (!agent) return;
+
+    agent.type = type;
+    setAgentsState([...agentsRef.current]);
+    rebuildStats();
+  }, [rebuildStats]);
 
   const moveAgentPreview = useCallback((row: number, col: number) => {
     hoverRef.current = { row, col };
@@ -452,6 +535,8 @@ export function useTerritoryGame(
     reset,
     placeAgent,
     removeAgent,
+    moveAgent,
+    updateAgent,
     moveAgentPreview,
     clearHover,
     getCell,

@@ -9,8 +9,7 @@
 // ─────────────────────────────────────────────
 
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
-import type { AgentInstance, AgentType, GamePhase } from '../types';
-import { AGENT_COLORS } from '../constants';
+import type { AgentInstance, GamePhase } from '../types';
 
 interface TerritoryCanvasProps {
   canvasRef: React.RefObject<HTMLCanvasElement | null>;
@@ -18,11 +17,11 @@ interface TerritoryCanvasProps {
   cols: number;
   phase: GamePhase;
   agents: AgentInstance[];
-  draggingType: AgentType | null;      // set when user is dragging from panel
-  draggingId: number;                   // next agent id to assign
-  onPlaceAgent: (agent: AgentInstance) => void;
-  onCanvasReady: (width: number, height: number) => void; // fires after size is known
+  draggingId: number | null;
+  onCanvasReady: (width: number, height: number) => void;
   getCell: (row: number, col: number) => number;
+  onMoveAgent: (id: number, row: number, col: number) => void;
+  onSetDraggingId: (id: number | null) => void;
 }
 
 export const TerritoryCanvas = memo(({
@@ -30,11 +29,12 @@ export const TerritoryCanvas = memo(({
   rows,
   cols,
   phase,
-  draggingType,
+  agents,
   draggingId,
-  onPlaceAgent,
   onCanvasReady,
   getCell,
+  onMoveAgent,
+  onSetDraggingId,
 }: TerritoryCanvasProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [cellSize, setCellSize] = useState({ w: 12, h: 12 });
@@ -82,51 +82,66 @@ export const TerritoryCanvas = memo(({
   }, [canvasRef, cellSize, cols, rows]);
 
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (phase !== 'SETUP' || !draggingType) { setHoverCell(null); return; }
+    if (phase !== 'SETUP') { setHoverCell(null); return; }
     const cell = getCellFromEvent(e);
     setHoverCell(cell);
-  }, [phase, draggingType, getCellFromEvent]);
+  }, [phase, getCellFromEvent]);
 
   const handleMouseDown = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (phase !== 'SETUP' || !draggingType) return;
+    if (phase !== 'SETUP') return;
     const cell = getCellFromEvent(e);
     if (!cell) return;
-    if (getCell(cell.row, cell.col) !== 0) return; // occupied
+    
+    const clickedId = getCell(cell.row, cell.col);
+    if (clickedId > 0) {
+      onSetDraggingId(clickedId);
+    }
+  }, [phase, getCellFromEvent, getCell, onSetDraggingId]);
 
-    onPlaceAgent({
-      id: draggingId,
-      type: draggingType,
-      row: cell.row,
-      col: cell.col,
-    });
-  }, [phase, draggingType, draggingId, getCellFromEvent, getCell, onPlaceAgent]);
+  const handleMouseUp = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (phase !== 'SETUP' || draggingId === null) return;
+    const cell = getCellFromEvent(e);
+    if (!cell) {
+      onSetDraggingId(null);
+      return;
+    }
 
-  const handleMouseLeave = useCallback(() => setHoverCell(null), []);
+    onMoveAgent(draggingId, cell.row, cell.col);
+    onSetDraggingId(null);
+  }, [phase, draggingId, getCellFromEvent, onMoveAgent, onSetDraggingId]);
+
+  const handleMouseLeave = useCallback(() => {
+    setHoverCell(null);
+    if (draggingId) onSetDraggingId(null);
+  }, [draggingId, onSetDraggingId]);
 
   // ── Hover overlay (drawn via CSS absolute div) ──────────────────────────
-  const hoverStyle: React.CSSProperties = hoverCell && draggingType ? {
+  const draggingAgent = draggingId ? agents.find(a => a.id === draggingId) : null;
+  const hoverStyle: React.CSSProperties = hoverCell && draggingId && draggingAgent ? {
     position: 'absolute',
     left:   hoverCell.col * cellSize.w,
     top:    hoverCell.row * cellSize.h,
     width:  cellSize.w,
     height: cellSize.h,
-    backgroundColor: AGENT_COLORS[draggingType],
-    opacity: 0.6,
+    backgroundColor: (draggingAgent as any).rgba ? `rgba(${(draggingAgent as any).rgba.join(',')})` : '#000',
+    opacity: 0.8,
     pointerEvents: 'none',
-    border: '1px solid rgba(27,28,26,0.4)',
+    border: '2px solid #1B1C1A',
+    zIndex: 10,
   } : { display: 'none' };
 
   return (
     <div
       ref={containerRef}
-      className="relative flex-grow w-full h-full flex items-center justify-center bg-crema overflow-hidden"
+      className="relative w-full h-full bg-crema flex items-center justify-center overflow-hidden"
     >
-      <div className="relative" style={{ display: 'inline-block' }}>
+      <div className="relative shadow-[8px_8px_0px_0px_rgba(27,28,26,0.1)]">
         <canvas
           ref={canvasRef}
-          className={`block border border-carbon/20 ${phase === 'SETUP' && draggingType ? 'cursor-crosshair' : 'cursor-default'}`}
+          className={`block border-2 border-carbon transition-colors ${phase === 'SETUP' ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'}`}
           onMouseMove={handleMouseMove}
           onMouseDown={handleMouseDown}
+          onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseLeave}
         />
         {/* Drag preview overlay */}

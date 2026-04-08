@@ -3,7 +3,7 @@
 // ─────────────────────────────────────────────
 
 import { memo } from 'react';
-import { AGENT_COLORS, AGENT_NAMES } from '../constants';
+import { AGENT_COLORS, AGENT_NAMES, ATTACKER_COLORS } from '../constants';
 import type { AgentType } from '../types';
 
 interface TerritoryBarProps {
@@ -14,24 +14,30 @@ interface TerritoryBarProps {
   totalCells: number;
 }
 
-export const TerritoryBar = memo(({ type, pct, cells }: TerritoryBarProps) => {
-  const color = AGENT_COLORS[type];
-  const name  = AGENT_NAMES[type];
+export const TerritoryBar = memo(({ agentId, type, pct, cells }: TerritoryBarProps) => {
+  const name  = `Team ${agentId}`;
+  const algoName = AGENT_NAMES[type];
+  const color = ATTACKER_COLORS[agentId - 1] || AGENT_COLORS[type];
 
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div
-            className="w-2.5 h-2.5 shrink-0"
-            style={{ backgroundColor: color }}
-          />
-          <span className="text-[11px] font-bold uppercase tracking-wider text-carbon">
-            {name}
+        <div className="flex flex-col">
+          <div className="flex items-center gap-2">
+            <div
+              className="w-2 h-2 shrink-0"
+              style={{ backgroundColor: color }}
+            />
+            <span className="text-[10px] font-black uppercase tracking-wider text-carbon">
+              {name}
+            </span>
+          </div>
+          <span className="text-[9px] font-mono text-carbon/40 ml-4 lowercase">
+            {algoName}
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-[11px] font-mono text-carbon/50">{cells}</span>
+          <span className="text-[10px] font-mono text-carbon/50">{cells} cells</span>
           <span
             className="text-[12px] font-black font-mono w-9 text-right"
             style={{ color }}
