@@ -15,7 +15,7 @@ export function greedyStep(
   grid: GridBuffer,
   rows: number,
   cols: number,
-  agent: AgentInstance,
+  _agent: AgentInstance,
   frontier: number[], // flat indices of cells owned by this agent that border empty cells
 ): number | null {
   // Collect all empty neighbors from the frontier (O(frontier × 4))

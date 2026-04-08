@@ -13,7 +13,7 @@ export function hunterStep(
   cols: number,
   agent: AgentInstance,
   frontier: number[],
-  allAgents: AgentInstance[],
+  _allAgents: AgentInstance[],
 ): number | null {
   const agentId = agent.id;
 
