@@ -1,0 +1,1 @@
+Arreglar mensajes de error de maximo de pila y maximo de capacidad (pone 12 por defecto, pero no coge la capacidad real)

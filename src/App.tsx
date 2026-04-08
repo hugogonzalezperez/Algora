@@ -2,15 +2,18 @@ import { useState } from 'react';
 import { PathfindingPage } from './pages/PathfindingPage';
 import { SortingPage } from './pages/SortingPage';
 import { DataStructuresPage } from './pages/DataStructuresPage';
+import { TerritoryWarPage } from './pages/TerritoryWarPage';
 
-const PAGES = { PATH: 'path', SORT: 'sort', DATA: 'data' } as const;
+const PAGES = { PATH: 'path', SORT: 'sort', DATA: 'data', TERRITORY: 'territory' } as const;
 type Page = typeof PAGES[keyof typeof PAGES];
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<Page>(PAGES.DATA);
 
+  const isFullHeight = currentPage === PAGES.DATA;
+
   return (
-    <div className={`bg-crema text-carbon font-mono flex flex-col ${currentPage === PAGES.DATA ? 'h-screen overflow-hidden' : 'min-h-screen'}`}>
+    <div className={`bg-crema text-carbon font-mono flex flex-col ${isFullHeight ? 'h-screen overflow-hidden' : 'min-h-screen'}`}>
       {/* Header Minimalista - Unified for both pages */}
       <nav className="border-b border-sepia px-8 py-4 flex justify-between items-center bg-crema shrink-0">
         <div className="flex items-center gap-10">
@@ -37,14 +40,22 @@ export default function App() {
               Data Structures
               <div className={`absolute -bottom-1 left-0 w-full h-[2px] bg-carbon transition-all duration-300 origin-left ${currentPage === PAGES.DATA ? 'scale-x-100 opacity-100' : 'scale-x-0 group-hover:scale-x-100 opacity-100'}`} />
             </button>
+            <button
+              onClick={() => setCurrentPage(PAGES.TERRITORY)}
+              className={`relative py-1 border-0 ${currentPage === PAGES.TERRITORY ? 'opacity-100' : 'opacity-40'} hover:opacity-100 transition-all uppercase group bg-transparent cursor-pointer`}
+            >
+              Territory
+              <div className={`absolute -bottom-1 left-0 w-full h-[2px] bg-carbon transition-all duration-300 origin-left ${currentPage === PAGES.TERRITORY ? 'scale-x-100 opacity-100' : 'scale-x-0 group-hover:scale-x-100 opacity-100'}`} />
+            </button>
           </div>
         </div>
       </nav>
 
-      <main className={`flex-1 bg-crema ${currentPage === PAGES.DATA ? 'overflow-hidden' : ''}`}>
-        {currentPage === PAGES.PATH && <PathfindingPage />}
-        {currentPage === PAGES.SORT && <SortingPage />}
-        {currentPage === PAGES.DATA && <DataStructuresPage />}
+      <main className={`flex-1 bg-crema ${isFullHeight ? 'overflow-hidden' : ''}`}>
+        {currentPage === PAGES.PATH      && <PathfindingPage />}
+        {currentPage === PAGES.SORT      && <SortingPage />}
+        {currentPage === PAGES.DATA      && <DataStructuresPage />}
+        {currentPage === PAGES.TERRITORY && <TerritoryWarPage />}
       </main>
     </div>
   );
